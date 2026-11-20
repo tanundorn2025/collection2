@@ -332,7 +332,7 @@ function svgIn(el,w,h){el.innerHTML='';return d3.select(el).append('svg').attr('
 function axisStyle(g){g.selectAll('text').style('fill','var(--text2)').style('font-size','11px');g.selectAll('line,path').style('stroke','var(--grid)')}
 function resolveC(c){if(c&&c.startsWith('var(')){const n=c.slice(4,-1).trim();return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}return c}
 function lumi(hex){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(x=>x+x).join('');const q=[0,2,4].map(i=>parseInt(hex.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*q[0]+.7152*q[1]+.0722*q[2]}
-function seriesText(sel,c){const col=resolveC(c)||'#888',sf=resolveC('var(--surface)')||'#fff';const ok=/^#[0-9a-f]{3,6}$/i;const L=ok.test(col)?lumi(col):0,LS=ok.test(sf)?lumi(sf):1;const cr=(Math.max(L,LS)+.05)/(Math.min(L,LS)+.05);sel.style('fill',col);if(cr<2.2)sel.style('stroke',LS>.5?'#111':'#fff').attr('stroke-width',1.5).style('paint-order','stroke').attr('stroke-linejoin','round');return sel}
+function seriesText(sel,c){const col=resolveC(c)||'#888',sf=resolveC('var(--surface)')||'#fff';const ok=/^#[0-9a-f]{3,6}$/i;const L=ok.test(col)?lumi(col):0,LS=ok.test(sf)?lumi(sf):1;const cr=(Math.max(L,LS)+.05)/(Math.min(L,LS)+.05);sel.style('fill',col);if(cr<2.2)sel.style('stroke',LS>.5?'#8a8a8a':'#9a9a9a').attr('stroke-width',1.2).style('paint-order','stroke').attr('stroke-linejoin','round');return sel}
 function labelsNoOverlap(items,gap=13){items.sort((a,b)=>a.y-b.y);for(let i=1;i<items.length;i++)if(items[i].y<items[i-1].y+gap)items[i].y=items[i-1].y+gap;return items}
 function emptyMsg(el,t){el.innerHTML=`<div class="empty">${t}</div>`}
 
