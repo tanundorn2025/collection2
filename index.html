@@ -44,7 +44,7 @@
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-#app{max-width:1360px;margin:0 auto;padding:20px 20px 48px}
+#app{max-width:none;margin:0 auto;padding:20px clamp(16px,2.2vw,40px) 48px}
 header.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
 h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
 .sub{color:var(--text2);font-size:13px;margin-top:2px}
@@ -330,6 +330,9 @@ const monthLabel=()=>{const s=selM();return s.length===1?'เดือน'+s[0]:
 const W=el=>Math.max(260,el.clientWidth||600);
 function svgIn(el,w,h){el.innerHTML='';return d3.select(el).append('svg').attr('width',w).attr('height',h).attr('viewBox',`0 0 ${w} ${h}`)}
 function axisStyle(g){g.selectAll('text').style('fill','var(--text2)').style('font-size','11px');g.selectAll('line,path').style('stroke','var(--grid)')}
+function resolveC(c){if(c&&c.startsWith('var(')){const n=c.slice(4,-1).trim();return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}return c}
+function lumi(hex){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(x=>x+x).join('');const q=[0,2,4].map(i=>parseInt(hex.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*q[0]+.7152*q[1]+.0722*q[2]}
+function seriesText(sel,c){const col=resolveC(c)||'#888',sf=resolveC('var(--surface)')||'#fff';const ok=/^#[0-9a-f]{3,6}$/i;const L=ok.test(col)?lumi(col):0,LS=ok.test(sf)?lumi(sf):1;const cr=(Math.max(L,LS)+.05)/(Math.min(L,LS)+.05);sel.style('fill',col);if(cr<2.2)sel.style('stroke',LS>.5?'#111':'#fff').attr('stroke-width',1.5).style('paint-order','stroke').attr('stroke-linejoin','round');return sel}
 function labelsNoOverlap(items,gap=13){items.sort((a,b)=>a.y-b.y);for(let i=1;i<items.length;i++)if(items[i].y<items[i-1].y+gap)items[i].y=items[i-1].y+gap;return items}
 function emptyMsg(el,t){el.innerHTML=`<div class="empty">${t}</div>`}
 
@@ -347,12 +350,12 @@ function lineChart(el,months,series,o={}){
   const lab=[];
   series.forEach(s=>{
     svg.append('path').datum(s.values).attr('d',ln).attr('fill','none').style('stroke',s.color).attr('stroke-width',s.w||2).attr('stroke-linejoin','round').attr('stroke-linecap','round').attr('stroke-dasharray',s.dash||null);
-    if(o.labels&&!s.dash)s.values.forEach((v,i)=>{if(v!=null)svg.append('text').attr('x',x(months[i])).attr('y',y(v)-9).attr('text-anchor','middle').style('fill','var(--text)').style('font-size','10.5px').style('font-weight','600').style('paint-order','stroke').style('stroke','var(--surface)').attr('stroke-width',3).text((v*100).toFixed(1))});
+    if(o.labels&&!s.dash)s.values.forEach((v,i)=>{if(v!=null)seriesText(svg.append('text').attr('x',x(months[i])).attr('y',y(v)-9).attr('text-anchor','middle').style('font-size','10.5px').style('font-weight','600'),s.color).text((v*100).toFixed(1))});
     s.values.forEach((v,i)=>{if(v!=null&&!s.dash)svg.append('circle').attr('cx',x(months[i])).attr('cy',y(v)).attr('r',3).style('fill',s.color).style('stroke','var(--surface)').attr('stroke-width',1.5)});
     const li=s.values.map((v,i)=>v!=null?i:-1).filter(i=>i>=0).pop();
     if(li!=null&&li>=0&&series.length<=5)lab.push({y:y(s.values[li])+4,text:s.name+' '+pct(s.values[li]),color:s.color});
   });
-  labelsNoOverlap(lab).forEach(l=>svg.append('text').attr('x',w-m.r+8).attr('y',l.y).style('fill','var(--text)').style('font-size','11.5px').style('font-weight','500').text(l.text.length>22?l.text.slice(0,21)+'…':l.text));
+  labelsNoOverlap(lab).forEach(l=>seriesText(svg.append('text').attr('x',w-m.r+8).attr('y',l.y).style('font-size','11.5px').style('font-weight','600'),l.color).text(l.text.length>22?l.text.slice(0,21)+'…':l.text));
   const cross=svg.append('line').attr('y1',m.t).attr('y2',h-m.b).style('stroke','var(--muted)').attr('stroke-dasharray','3 3').style('display','none');
   const ring=svg.append('g');
   svg.append('rect').attr('x',m.l).attr('y',0).attr('width',w-m.l-m.r+20).attr('height',h).attr('fill','transparent')
@@ -382,7 +385,7 @@ function monthBars(el,months,data){
       const fm=v=>(v/1e6).toFixed(1);
       svg.append('text').attr('x',bx+x1('t')+x1.bandwidth()/2).attr('y',y(d.t)-5).attr('text-anchor','middle').style('fill','var(--text2)').style('font-size','10.5px').style('font-weight','600').text(fm(d.t));
       svg.append('text').attr('x',bx+x1('a')+x1.bandwidth()/2).attr('y',y(d.a)-5).attr('text-anchor','middle').style('fill','var(--text)').style('font-size','10.5px').style('font-weight','600').text(fm(d.a));
-      svg.append('text').attr('x',bx+x1('a')+x1.bandwidth()/2).attr('y',y(d.a)+15).attr('text-anchor','middle').style('fill','var(--accent-ink)').style('font-size','10.5px').style('font-weight','700').text(pct(d.pct,0));
+      svg.append('text').attr('x',bx+x1('a')+x1.bandwidth()/2).attr('y',y(d.a)+15).attr('text-anchor','middle').style('fill','var(--accent-ink)').style('font-size','9.5px').style('font-weight','700').text(pct(d.pct,2));
     }
     svg.append('rect').attr('x',bx-4).attr('y',m.t).attr('width',x0.bandwidth()+8).attr('height',h-m.t-m.b).attr('fill','transparent')
      .on('pointermove',ev=>showTip(`<div class="h">${esc(d.m)}</div>`+trow('var(--muted)','เป้าค่างวด','฿'+fmtInt(d.t))+trow('var(--accent)','เก็บได้','฿'+fmtInt(d.a))+trow('','ขาดเป้า','฿'+fmtInt(d.t-d.a))+trow('','% เก็บได้',pct(d.pct))+trow('','สัญญาเก็บได้',fmtInt(d.k)+' / '+fmtInt(d.n)),ev))
