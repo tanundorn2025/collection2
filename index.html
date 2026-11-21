@@ -62,12 +62,11 @@ h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
 select,input[type=number],input[type=search]{font:inherit;font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
 input[type=number]{width:70px}
 .chip{font:inherit;font-size:13px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:4px 12px 4px 9px;cursor:pointer}
-.chip .dot{width:10px;height:10px;border-radius:3px}
+.sh{display:inline-flex;align-items:center;justify-content:center;background:var(--surface);border-radius:50%;width:17px;height:17px;vertical-align:middle;margin-right:5px;flex:none}
 .chip[aria-pressed="true"]{background:var(--text);color:var(--surface);border-color:var(--text);font-weight:600}
 .chip[aria-pressed="true"]::before{content:"✓";font-size:12px;font-weight:700}
-.chip[aria-pressed="true"] .dot{box-shadow:0 0 0 1.5px var(--surface)}
 .chip[aria-pressed="false"]{color:var(--muted);background:transparent;border-style:dashed}
-.chip[aria-pressed="false"] .dot{opacity:.35}
+.chip[aria-pressed="false"] .sh{opacity:.45}
 .ch{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .tgl{font-size:12px;color:var(--text2);display:inline-flex;gap:5px;align-items:center;cursor:pointer;white-space:nowrap;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:2px 10px}
 .tgl input{accent-color:var(--accent);margin:0}
@@ -110,7 +109,7 @@ tbody tr{cursor:pointer}
 tbody tr:hover td:not(.heat){background:var(--surface2)}
 td.heat{color:var(--text)}
 th.cur{color:var(--accent)}
-.rdot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.rdot{}
 #tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:12px;box-shadow:0 6px 24px rgba(0,0,0,.25);max-width:280px;display:none;font-variant-numeric:tabular-nums}
 #tip .h{font-weight:600;margin-bottom:4px}
 #tip .r{display:flex;justify-content:space-between;gap:14px;color:var(--text2)}
@@ -223,13 +222,17 @@ function monthIdx(m){const s=String(m);for(let i=0;i<12;i++)if(s.includes(TH_MON
 function monthKey(m){const s=String(m);const y=(s.match(/(\d{4})/)||[])[1];return (y?+y:0)*100+monthIdx(s)}
 let COLORS={};try{COLORS=JSON.parse(localStorage.getItem('collect_dash_colors_v1')||'{}')||{}}catch(e){COLORS={}}
 function regionColor(r){if(COLORS[r])return COLORS[r];const i=S.allRegions.indexOf(r);return `var(--s${(i%8)+1})`}
+const SHAPES=['symbolCircle','symbolSquare','symbolTriangle','symbolDiamond','symbolCross','symbolStar','symbolWye','symbolTimes'];
+const regionShape=r=>d3[SHAPES[Math.max(0,S.allRegions.indexOf(r))%8]];
+const symPath=(type,size)=>d3.symbol().type(type).size(size)();
+const shapeHTML=(r,size=64)=>`<span class="sh"><svg width="12" height="12" viewBox="-6.5 -6.5 13 13"><path d="${symPath(regionShape(r),size)}" style="fill:${regionColor(r)}"/></svg></span>`;
 function saveColors(){try{localStorage.setItem('collect_dash_colors_v1',JSON.stringify(COLORS))}catch(e){}}
 function buildColors(){
   const w=$('#colors');w.innerHTML='';
   S.allRegions.forEach(r=>{const l=document.createElement('label');l.className='cp';const i=document.createElement('input');i.type='color';
     const c=resolveC(regionColor(r));i.value=/^#[0-9a-f]{6}$/i.test(c)?c:'#888888';i.setAttribute('aria-label','สีเส้น '+r);
-    i.oninput=()=>{COLORS[r]=i.value;saveColors();document.querySelectorAll('.chip[data-r]').forEach(b=>{const d=b.querySelector('.dot');if(d)d.style.background=regionColor(b.dataset.r)});renderAll()};
-    l.appendChild(i);l.appendChild(document.createTextNode(' '+r));w.appendChild(l)});
+    i.oninput=()=>{COLORS[r]=i.value;saveColors();document.querySelectorAll('.chip[data-r] .sh').forEach(s=>{s.outerHTML=shapeHTML(s.closest('.chip').dataset.r)});renderAll()};
+    l.appendChild(i);l.insertAdjacentHTML('beforeend',' '+shapeHTML(r)+esc(r));w.appendChild(l)});
 }
 
 function agg(rows){let n=0,t=0,k=0,a=0;for(const x of rows){n+=x.n;t+=x.t;k+=x.k;a+=x.a}return{n,t,k,a,pct:t?a/t:null,cpct:n?k/n:null,gap:t-a,cnt:rows.length,avgN:rows.length?n/rows.length:0}}
@@ -299,7 +302,7 @@ function buildFilters(){
   const c=$('#chips');c.innerHTML='';
   const all=document.createElement('button');all.className='chip';all.textContent='ทุกภาค';all.setAttribute('aria-pressed',S.regions.size===S.allRegions.length);
   all.onclick=()=>{S.regions=new Set(S.allRegions);buildFilters();renderAll()};c.appendChild(all);
-  S.allRegions.forEach(r=>{const b=document.createElement('button');b.className='chip';b.dataset.r=r;b.setAttribute('aria-pressed',S.regions.has(r));b.innerHTML=`<span class="dot" style="background:${regionColor(r)}"></span>${esc(r)}`;
+  S.allRegions.forEach(r=>{const b=document.createElement('button');b.className='chip';b.dataset.r=r;b.setAttribute('aria-pressed',S.regions.has(r));b.innerHTML=`${shapeHTML(r)}${esc(r)}`;
     b.onclick=()=>{if(S.regions.has(r)){if(S.regions.size>1)S.regions.delete(r)}else S.regions.add(r);buildFilters();renderAll()};c.appendChild(b)});
   const mc=$('#mchips');mc.innerHTML='';
   const ma=document.createElement('button');ma.className='chip m';ma.textContent='ทุกเดือน';ma.setAttribute('aria-pressed',S.months.size===MONTHS.length);ma.onclick=()=>{S.months=new Set(MONTHS);buildFilters();renderAll()};mc.appendChild(ma);
@@ -324,7 +327,7 @@ document.addEventListener('drop',e=>{const f=e.dataTransfer&&e.dataTransfer.file
 const tip=$('#tip');
 function showTip(html,ev){tip.innerHTML=html;tip.style.display='block';const w=tip.offsetWidth,h=tip.offsetHeight;let x=ev.clientX+14,y=ev.clientY+14;if(x+w>innerWidth-8)x=ev.clientX-w-14;if(y+h>innerHeight-8)y=innerHeight-h-8;tip.style.left=Math.max(8,x)+'px';tip.style.top=Math.max(8,y)+'px'}
 function hideTip(){tip.style.display='none'}
-const trow=(c,n,v)=>`<div class="r"><span>${c?`<i style="background:${c}"></i>`:''}${esc(n)}</span><b>${v}</b></div>`;
+const trow=(c,n,v)=>`<div class="r"><span>${c?(c[0]==='<'?c:`<i style="background:${c}"></i>`):''}${esc(n)}</span><b>${v}</b></div>`;
 
 // ---------- derived ----------
 const rowsR=()=>DATA.filter(d=>S.regions.has(d.r));
@@ -364,7 +367,7 @@ function lineChart(el,months,series,o={}){
   series.forEach(s=>{
     svg.append('path').datum(s.values).attr('d',ln).attr('fill','none').style('stroke',s.color).attr('stroke-width',s.w||2).attr('stroke-linejoin','round').attr('stroke-linecap','round').attr('stroke-dasharray',s.dash||null);
     if(o.labels&&!s.dash)s.values.forEach((v,i)=>{if(v!=null)seriesText(svg.append('text').attr('x',x(months[i])).attr('y',y(v)-9).attr('text-anchor','middle').style('font-size','10.5px').style('font-weight','600'),s.color).text((v*100).toFixed(1))});
-    s.values.forEach((v,i)=>{if(v!=null&&!s.dash)svg.append('circle').attr('cx',x(months[i])).attr('cy',y(v)).attr('r',3).style('fill',s.color).style('stroke','var(--surface)').attr('stroke-width',1.5)});
+    s.values.forEach((v,i)=>{if(v!=null&&!s.dash)svg.append('path').attr('d',symPath(s.shape||d3.symbolCircle,s.shape?58:30)).attr('transform',`translate(${x(months[i])},${y(v)})`).style('fill',s.color).style('stroke','var(--surface)').attr('stroke-width',1.2)});
     const li=s.values.map((v,i)=>v!=null?i:-1).filter(i=>i>=0).pop();
     if(li!=null&&li>=0&&series.length<=5)lab.push({y:y(s.values[li])+4,text:s.name+' '+pct(s.values[li]),color:s.color});
   });
@@ -375,7 +378,7 @@ function lineChart(el,months,series,o={}){
    .on('pointermove',ev=>{const [px]=d3.pointer(ev);let best=0,bd=1e9;months.forEach((mo,i)=>{const d=Math.abs(x(mo)-px);if(d<bd){bd=d;best=i}});
       const cx=x(months[best]);cross.attr('x1',cx).attr('x2',cx).style('display',null);ring.selectAll('*').remove();
       let html=`<div class="h">${esc(months[best])}</div>`;
-      series.filter(s=>s.values[best]!=null).sort((a,b)=>b.values[best]-a.values[best]).forEach(s=>{ring.append('circle').attr('cx',cx).attr('cy',y(s.values[best])).attr('r',5).style('fill',s.color).style('stroke','var(--surface)').attr('stroke-width',2);html+=trow(s.color,s.name,pct(s.values[best]))});
+      series.filter(s=>s.values[best]!=null).sort((a,b)=>b.values[best]-a.values[best]).forEach(s=>{ring.append('path').attr('d',symPath(s.shape||d3.symbolCircle,s.shape?130:60)).attr('transform',`translate(${cx},${y(s.values[best])})`).style('fill',s.color).style('stroke','var(--surface)').attr('stroke-width',2);html+=trow(s.reg?shapeHTML(s.reg):s.color,s.name,pct(s.values[best]))});
       showTip(html,ev)})
    .on('pointerleave',()=>{cross.style('display','none');ring.selectAll('*').remove();hideTip()});
 }
@@ -440,9 +443,9 @@ function scatter(el,groups){
   if(tot.pct!=null)svg.append('line').attr('x1',m.l).attr('x2',w-m.r).attr('y1',y(tot.pct)).attr('y2',y(tot.pct)).style('stroke','var(--muted)').attr('stroke-dasharray','4 4');
   groups.forEach(g=>{if(g.pct==null)return;
     if(S.lbl.scatter)svg.append('text').attr('x',x(g.avgN)+7).attr('y',y(g.pct)+3).style('fill','var(--text2)').style('font-size','9.5px').text((g.pct*100).toFixed(0));
-    svg.append('circle').attr('cx',x(g.avgN)).attr('cy',y(g.pct)).attr('r',g.g===S.group?7:5).style('fill',regionColor(g.r)).attr('fill-opacity',.88).style('stroke',g.g===S.group?'var(--text)':'var(--surface)').attr('stroke-width',2)
-     .style('cursor','pointer').on('pointermove',ev=>showTip(`<div class="h">${esc(g.g)}</div>`+trow(regionColor(g.r),g.r,'')+trow('','% เก็บได้',pct(g.pct))+trow('','สัญญาเฉลี่ย/เดือน',fmtInt(g.avgN))+trow('','เก็บได้','฿'+fmtInt(g.a)),ev)).on('pointerleave',hideTip).on('click',()=>{S.group=g.g;renderGroup();renderTable()})});
-  $('#lgScatter').innerHTML=S.allRegions.filter(r=>S.regions.has(r)).map(r=>`<span><i style="background:${regionColor(r)}"></i>${esc(r)}</span>`).join('')+'<span style="color:var(--muted)">┄ ค่าเฉลี่ยรวม</span>';
+    svg.append('path').attr('d',symPath(regionShape(g.r),g.g===S.group?170:80)).attr('transform',`translate(${x(g.avgN)},${y(g.pct)})`).style('fill',regionColor(g.r)).attr('fill-opacity',.88).style('stroke',g.g===S.group?'var(--text)':'var(--surface)').attr('stroke-width',2)
+     .style('cursor','pointer').on('pointermove',ev=>showTip(`<div class="h">${esc(g.g)}</div>`+trow(shapeHTML(g.r),g.r,'')+trow('','% เก็บได้',pct(g.pct))+trow('','สัญญาเฉลี่ย/เดือน',fmtInt(g.avgN))+trow('','เก็บได้','฿'+fmtInt(g.a)),ev)).on('pointerleave',hideTip).on('click',()=>{S.group=g.g;renderGroup();renderTable()})});
+  $('#lgScatter').innerHTML=S.allRegions.filter(r=>S.regions.has(r)).map(r=>`<span>${shapeHTML(r)}${esc(r)}</span>`).join('')+'<span style="color:var(--muted)">┄ ค่าเฉลี่ยรวม</span>';
 }
 
 // ---------- render ----------
@@ -483,10 +486,10 @@ function renderInsights(){
 function renderLine(){
   const rr=S.allRegions.filter(r=>S.regions.has(r));
   const TM=trendM();
-  const series=rr.map(r=>({name:r,color:regionColor(r),values:TM.map(m=>agg(DATA.filter(d=>d.r===r&&d.m===m)).pct)}));
+  const series=rr.map(r=>({name:r,reg:r,shape:regionShape(r),color:regionColor(r),values:TM.map(m=>agg(DATA.filter(d=>d.r===r&&d.m===m)).pct)}));
   series.push({name:'ภาพรวม',color:'var(--text2)',dash:'5 4',w:1.75,values:TM.map(m=>agg(rowsR().filter(d=>d.m===m)).pct)});
   $('#hLine').textContent=`% = ยอดเก็บได้ ÷ เป้าค่างวด · เส้นประ = ภาพรวมตามภาคที่เลือก · ${selM().length>=2?'แสดงเฉพาะเดือนที่เลือก':'เลือก 2 เดือนขึ้นไปเพื่อดูเฉพาะช่วง (ตอนนี้แสดงทุกเดือน)'} · ชี้ที่จุดเพื่อดูค่า`;
-  $('#lgLine').innerHTML=series.map(s=>`<span><i style="background:${s.color};${s.dash?'height:2px;vertical-align:3px':''}"></i>${esc(s.name)}</span>`).join('');
+  $('#lgLine').innerHTML=series.map(s=>s.reg?`<span>${shapeHTML(s.reg)}${esc(s.name)}</span>`:`<span><i style="background:${s.color};${s.dash?'height:2px;vertical-align:3px':''}"></i>${esc(s.name)}</span>`).join('');
   lineChart($('#chLine'),TM,series,{labels:S.lbl.line});
 }
 function renderBars(){
@@ -502,7 +505,7 @@ function renderRegion(){
   items.forEach(it=>{});
   hbars($('#chRegion'),items,{domain:[0,1],rh:46,labelW:70,labels:S.lbl.region});
 }
-function rankItems(gs){return gs.map(g=>({label:g.g,value:g.pct,color:regionColor(g.r),group:g.g,tip:`<div class="h">${esc(g.g)}</div>`+trow(regionColor(g.r),g.r,'')+trow('','% เก็บได้',pct(g.pct))+trow('','เป้า','฿'+fmtInt(g.t))+trow('','เก็บได้','฿'+fmtInt(g.a))+trow('','สัญญา',fmtInt(g.k)+' / '+fmtInt(g.n))}))}
+function rankItems(gs){return gs.map(g=>({label:g.g,value:g.pct,color:regionColor(g.r),group:g.g,tip:`<div class="h">${esc(g.g)}</div>`+trow(shapeHTML(g.r),g.r,'')+trow('','% เก็บได้',pct(g.pct))+trow('','เป้า','฿'+fmtInt(g.t))+trow('','เก็บได้','฿'+fmtInt(g.a))+trow('','สัญญา',fmtInt(g.k)+' / '+fmtInt(g.n))}))}
 function renderRank(){
   const gs=groupAgg(curRows()).filter(g=>g.pct!=null).sort((a,b)=>b.pct-a.pct);
   $('#hTop').textContent=monthLabel();$('#hBot').textContent=monthLabel()+` · แท่งเรียงจากต่ำสุด`;
@@ -529,11 +532,11 @@ function renderGroup(){
   $('#gTitle').textContent='แนวโน้มรายกลุ่ม: '+S.group;
   const TM=trendM();
   const series=[
-    {name:S.group,color:regionColor(reg),w:3,values:TM.map(m=>agg(rows.filter(d=>d.m===m)).pct)},
+    {name:S.group,reg:reg,shape:regionShape(reg),color:regionColor(reg),w:3,values:TM.map(m=>agg(rows.filter(d=>d.m===m)).pct)},
     {name:'เฉลี่ย'+reg,color:'var(--text2)',dash:'5 4',w:1.75,values:TM.map(m=>agg(DATA.filter(d=>d.r===reg&&d.m===m)).pct)},
     {name:'ภาพรวมทั้งหมด',color:'var(--muted)',dash:'2 4',w:1.75,values:TM.map(m=>agg(DATA.filter(d=>d.m===m)).pct)}
   ];
-  $('#lgGroup').innerHTML=series.map(s=>`<span><i style="background:${s.color};${s.dash?'height:2px;vertical-align:3px':''}"></i>${esc(s.name)}</span>`).join('');
+  $('#lgGroup').innerHTML=series.map(s=>s.reg?`<span>${shapeHTML(s.reg)}${esc(s.name)}</span>`:`<span><i style="background:${s.color};${s.dash?'height:2px;vertical-align:3px':''}"></i>${esc(s.name)}</span>`).join('');
   lineChart($('#chGroup'),TM,series,{h:260,rightPad:130,labels:S.lbl.group});
 }
 function renderTable(){
@@ -550,7 +553,7 @@ function renderTable(){
   const lastLbl=TM.length>1?`Δ ${mShort(TM[TM.length-1])}`:'Δ';
   let h='<thead><tr>'+th('g','กลุ่ม','l')+th('r','ภาค','l')+TM.map(m=>th(m,esc(mShort(m)))).join('')+th('tot','รวม')+th('delta',lastLbl)+'</tr></thead><tbody>';
   for(const x of list){
-    h+=`<tr data-g="${esc(x.g)}" class="${x.g===S.group?'sel':''}"><td>${esc(x.g)}</td><td class="l"><span class="rdot" style="background:${regionColor(x.r)}"></span>${esc(x.r)}</td>`;
+    h+=`<tr data-g="${esc(x.g)}" class="${x.g===S.group?'sel':''}"><td>${esc(x.g)}</td><td class="l">${shapeHTML(x.r)}${esc(x.r)}</td>`;
     for(const m of TM){const v=pctOf(x,m),d=x.by[m];
       h+=v==null?'<td>–</td>':`<td class="heat" style="background:color-mix(in srgb,var(--accent) ${Math.round(8+((v-lo)/((hi-lo)||1))*52)}%,var(--surface))" title="${esc(m)}: เก็บได้ ฿${fmtInt(d.a)} / เป้า ฿${fmtInt(d.t)}">${(v*100).toFixed(1)}</td>`}
     h+=`<td><b>${pct(x.tot)}</b></td><td>${x.delta==null?'–':`<span style="color:var(--${x.delta>=0?'up':'down'});font-weight:600">${x.delta>=0?'▲':'▼'} ${Math.abs(x.delta*100).toFixed(1)}</span>`}</td></tr>`;
@@ -584,7 +587,7 @@ function renderRecs(){
 }
 function renderPareto(){
   const gs=groupAgg(curRows()).filter(g=>g.pct!=null).sort((a,b)=>b.gap-a.gap),tg=d3.sum(gs,g=>g.gap);let cum=0;
-  const items=gs.slice(0,10).map(g=>{cum+=g.gap;return{label:g.g,value:g.gap,color:regionColor(g.r),group:g.g,text:fmtM(g.gap)+' ('+(cum/tg*100).toFixed(0)+'%)',tip:`<div class="h">${esc(g.g)}</div>`+trow(regionColor(g.r),g.r,'')+trow('','ขาดเป้า','฿'+fmtInt(g.gap))+trow('','สะสม',(cum/tg*100).toFixed(1)+'%')+trow('','% เก็บได้',pct(g.pct))}});
+  const items=gs.slice(0,10).map(g=>{cum+=g.gap;return{label:g.g,value:g.gap,color:regionColor(g.r),group:g.g,text:fmtM(g.gap)+' ('+(cum/tg*100).toFixed(0)+'%)',tip:`<div class="h">${esc(g.g)}</div>`+trow(shapeHTML(g.r),g.r,'')+trow('','ขาดเป้า','฿'+fmtInt(g.gap))+trow('','สะสม',(cum/tg*100).toFixed(1)+'%')+trow('','% เก็บได้',pct(g.pct))}});
   hbars($('#chPareto'),items,{domain:[0,d3.max(items,d=>d.value)||1],rightW:104,labels:S.lbl.pareto});
 }
 function renderWatch(){
@@ -600,7 +603,7 @@ function renderWatch(){
   lst.sort((a,b)=>b.low-a.low||b.dn-a.dn||a.last-b.last);
   $('#hWatch').textContent=`ต่ำกว่า ${(S.thr*100).toFixed(0)}% ติดต่อกัน ≥${lowMin} เดือน หรือ % ลดลงติดต่อกัน ≥${downMin} เดือน (นับถึง ${TM[TM.length-1]}) · พบ ${lst.length} กลุ่ม`;
   if(!lst.length){t.innerHTML='<tbody><tr><td class="l" style="cursor:default">ไม่พบกลุ่มที่เข้าเกณฑ์</td></tr></tbody>';return}
-  t.innerHTML='<thead><tr><th class="l">กลุ่ม</th><th class="l">ภาค</th><th>% ล่าสุด</th><th>ต่ำกว่าเกณฑ์ (เดือน)</th><th>ลดลงติด (เดือน)</th><th>ขาดเป้า (฿)</th></tr></thead><tbody>'+lst.slice(0,30).map(x=>`<tr data-g="${esc(x.g)}"><td>${esc(x.g)}</td><td class="l"><span class="rdot" style="background:${regionColor(x.r)}"></span>${esc(x.r)}</td><td>${pct(x.last)}</td><td class="${x.low>=lowMin?'bad':''}">${x.low||'–'}</td><td class="${x.dn>=downMin?'bad':''}">${x.dn||'–'}</td><td>${fmtM(x.gap)}</td></tr>`).join('')+'</tbody>';
+  t.innerHTML='<thead><tr><th class="l">กลุ่ม</th><th class="l">ภาค</th><th>% ล่าสุด</th><th>ต่ำกว่าเกณฑ์ (เดือน)</th><th>ลดลงติด (เดือน)</th><th>ขาดเป้า (฿)</th></tr></thead><tbody>'+lst.slice(0,30).map(x=>`<tr data-g="${esc(x.g)}"><td>${esc(x.g)}</td><td class="l">${shapeHTML(x.r)}${esc(x.r)}</td><td>${pct(x.last)}</td><td class="${x.low>=lowMin?'bad':''}">${x.low||'–'}</td><td class="${x.dn>=downMin?'bad':''}">${x.dn||'–'}</td><td>${fmtM(x.gap)}</td></tr>`).join('')+'</tbody>';
   t.querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>{S.group=tr.dataset.g;renderGroup();renderScatter();renderTable()});
 }
 
