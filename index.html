@@ -13,32 +13,32 @@
   --font:'IBM Plex Sans Thai',system-ui,-apple-system,'Segoe UI',sans-serif;
   --bg:#f4f4f1;--surface:#ffffff;--surface2:#f0efeb;--text:#0b0b0b;--text2:#52514e;--muted:#8a8984;
   --grid:#e6e5e0;--border:#dcdbd5;--accent:#2a78d6;--accent-ink:#ffffff;--up:#2a78d6;--down:#eb6834;
-  --s1:#0b6b34;--s2:#f4c400;--s3:#2aa7f0;--s4:#3f1f7a;--s5:#e87ba4;--s6:#eb6834;--s7:#6b7280;--s8:#e34948;
+  --s1:#0b6b34;--s2:#f08a00;--s3:#2aa7f0;--s4:#3f1f7a;--s5:#e87ba4;--s6:#eb6834;--s7:#6b7280;--s8:#e34948;
   --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.05);
   color-scheme:light;
 }
 [data-theme="dark"]{
   --bg:#0f0f0e;--surface:#1a1a19;--surface2:#242423;--text:#f0efec;--text2:#c3c2b7;--muted:#8d8c85;
   --grid:#2c2c2a;--border:#34342f;--accent:#3987e5;--accent-ink:#ffffff;--up:#3987e5;--down:#d95926;
-  --s1:#2faa62;--s2:#ffd83a;--s3:#4cb8ff;--s4:#8266de;--s5:#d55181;--s6:#d95926;--s7:#9aa0a6;--s8:#e66767;
+  --s1:#2faa62;--s2:#ff9a3c;--s3:#4cb8ff;--s4:#8266de;--s5:#d55181;--s6:#d95926;--s7:#9aa0a6;--s8:#e66767;
   --shadow:none;color-scheme:dark;
 }
 [data-theme="ocean"]{
   --bg:#08172a;--surface:#0f2640;--surface2:#16314f;--text:#eaf2fb;--text2:#b5c8de;--muted:#7e96b2;
   --grid:#1d3a5c;--border:#25466c;--accent:#4aa3ff;--accent-ink:#04121f;--up:#4aa3ff;--down:#ff8a4c;
-  --s1:#2faa62;--s2:#ffd83a;--s3:#4cb8ff;--s4:#8266de;--s5:#d55181;--s6:#d95926;--s7:#9aa0a6;--s8:#e66767;
+  --s1:#2faa62;--s2:#ff9a3c;--s3:#4cb8ff;--s4:#8266de;--s5:#d55181;--s6:#d95926;--s7:#9aa0a6;--s8:#e66767;
   --shadow:none;color-scheme:dark;
 }
 [data-theme="sand"]{
   --bg:#f3ece0;--surface:#fffaf1;--surface2:#f1e8d8;--text:#2a2118;--text2:#6a5b49;--muted:#9a8a75;
   --grid:#e9dfcc;--border:#e0d3bb;--accent:#b5541f;--accent-ink:#ffffff;--up:#2a78d6;--down:#b5541f;
-  --s1:#0b6b34;--s2:#f4c400;--s3:#2aa7f0;--s4:#3f1f7a;--s5:#e87ba4;--s6:#eb6834;--s7:#6b7280;--s8:#e34948;
+  --s1:#0b6b34;--s2:#f08a00;--s3:#2aa7f0;--s4:#3f1f7a;--s5:#e87ba4;--s6:#eb6834;--s7:#6b7280;--s8:#e34948;
   --shadow:0 1px 2px rgba(60,40,10,.05),0 4px 14px rgba(60,40,10,.06);color-scheme:light;
 }
 [data-theme="forest"]{
   --bg:#0c1713;--surface:#13241d;--surface2:#1b3128;--text:#e8f2ec;--text2:#b2c8bb;--muted:#7a9486;
   --grid:#213b30;--border:#2a4a3c;--accent:#3ecf8e;--accent-ink:#04150d;--up:#3ecf8e;--down:#ff9a52;
-  --s1:#34c06a;--s2:#ffd83a;--s3:#4cb8ff;--s4:#8266de;--s5:#d55181;--s6:#d95926;--s7:#9aa0a6;--s8:#e66767;
+  --s1:#34c06a;--s2:#ff9a3c;--s3:#4cb8ff;--s4:#8266de;--s5:#d55181;--s6:#d95926;--s7:#9aa0a6;--s8:#e66767;
   --shadow:none;color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -71,6 +71,8 @@ input[type=number]{width:70px}
 .ch{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .tgl{font-size:12px;color:var(--text2);display:inline-flex;gap:5px;align-items:center;cursor:pointer;white-space:nowrap;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:2px 10px}
 .tgl input{accent-color:var(--accent);margin:0}
+.cp{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--text2);cursor:pointer}
+.cp input{width:26px;height:26px;padding:0;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer}
 .mchips{display:flex;flex-wrap:wrap;gap:6px}
 table.mini td,table.mini th{padding:5px 8px}
 .bad{color:var(--down);font-weight:600}
@@ -156,6 +158,7 @@ label.radio{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:
   <div class="filters">
     <div class="fgroup"><span class="flabel">ภาค</span><span id="chips" class="fgroup"></span></div>
     <div class="fgroup"><span class="flabel">เดือน (เลือกได้หลายเดือน)</span><span id="mchips" class="mchips"></span></div>
+    <div class="fgroup"><span class="flabel">สีเส้น</span><span id="colors" class="fgroup"></span><button class="btn" id="btnColorReset" style="padding:3px 9px;font-size:12px">รีเซ็ตสี</button></div>
     <div class="fgroup"><span class="flabel">เกณฑ์เฝ้าระวัง (% ต่ำกว่า)</span><input type="number" id="thr" min="0" max="100" step="1" value="50"></div>
   </div>
 
@@ -218,7 +221,16 @@ const pp=v=>(v>=0?'+':'')+(v*100).toFixed(1)+' จุด';
 const mShort=m=>{const i=monthIdx(m);return i>=0?TH_SHORT[i]:m};
 function monthIdx(m){const s=String(m);for(let i=0;i<12;i++)if(s.includes(TH_MONTHS[i]))return i;return -1}
 function monthKey(m){const s=String(m);const y=(s.match(/(\d{4})/)||[])[1];return (y?+y:0)*100+monthIdx(s)}
-function regionColor(r){const i=S.allRegions.indexOf(r);return `var(--s${(i%8)+1})`}
+let COLORS={};try{COLORS=JSON.parse(localStorage.getItem('collect_dash_colors_v1')||'{}')||{}}catch(e){COLORS={}}
+function regionColor(r){if(COLORS[r])return COLORS[r];const i=S.allRegions.indexOf(r);return `var(--s${(i%8)+1})`}
+function saveColors(){try{localStorage.setItem('collect_dash_colors_v1',JSON.stringify(COLORS))}catch(e){}}
+function buildColors(){
+  const w=$('#colors');w.innerHTML='';
+  S.allRegions.forEach(r=>{const l=document.createElement('label');l.className='cp';const i=document.createElement('input');i.type='color';
+    const c=resolveC(regionColor(r));i.value=/^#[0-9a-f]{6}$/i.test(c)?c:'#888888';i.setAttribute('aria-label','สีเส้น '+r);
+    i.oninput=()=>{COLORS[r]=i.value;saveColors();document.querySelectorAll('.chip[data-r]').forEach(b=>{const d=b.querySelector('.dot');if(d)d.style.background=regionColor(b.dataset.r)});renderAll()};
+    l.appendChild(i);l.appendChild(document.createTextNode(' '+r));w.appendChild(l)});
+}
 
 function agg(rows){let n=0,t=0,k=0,a=0;for(const x of rows){n+=x.n;t+=x.t;k+=x.k;a+=x.a}return{n,t,k,a,pct:t?a/t:null,cpct:n?k/n:null,gap:t-a,cnt:rows.length,avgN:rows.length?n/rows.length:0}}
 
@@ -230,7 +242,7 @@ function setData(rows,meta){
   S.regions=new Set(S.allRegions);
   S.months=new Set([...S.months].filter(m=>MONTHS.includes(m)));if(!S.months.size)S.months=new Set([MONTHS[MONTHS.length-1]]);
   S.group=null;
-  buildFilters();renderAll();
+  buildFilters();buildColors();renderAll();
 }
 function fromDefault(){return DEFAULT_ROWS.map(a=>({m:a[0],r:a[1],g:a[2],n:a[3],t:a[4],k:a[5],a:a[6]}))}
 function persist(){try{localStorage.setItem(LS_DATA,JSON.stringify({rows:DATA,meta:META}))}catch(e){}}
@@ -281,13 +293,13 @@ async function handleFile(file){
 // ---------- filters UI ----------
 function buildThemes(){
   const w=$('#themes');w.innerHTML='';
-  THEMES.forEach(([id,name,c])=>{const b=document.createElement('button');b.style.background=c;b.title=name;b.setAttribute('aria-label','ธีม'+name);b.setAttribute('aria-pressed',S.theme===id);b.onclick=()=>{S.theme=id;document.documentElement.dataset.theme=id;try{localStorage.setItem(LS_THEME,id)}catch(e){};buildThemes();renderAll()};w.appendChild(b)});
+  THEMES.forEach(([id,name,c])=>{const b=document.createElement('button');b.style.background=c;b.title=name;b.setAttribute('aria-label','ธีม'+name);b.setAttribute('aria-pressed',S.theme===id);b.onclick=()=>{S.theme=id;document.documentElement.dataset.theme=id;try{localStorage.setItem(LS_THEME,id)}catch(e){};buildThemes();buildColors();renderAll()};w.appendChild(b)});
 }
 function buildFilters(){
   const c=$('#chips');c.innerHTML='';
   const all=document.createElement('button');all.className='chip';all.textContent='ทุกภาค';all.setAttribute('aria-pressed',S.regions.size===S.allRegions.length);
   all.onclick=()=>{S.regions=new Set(S.allRegions);buildFilters();renderAll()};c.appendChild(all);
-  S.allRegions.forEach(r=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed',S.regions.has(r));b.innerHTML=`<span class="dot" style="background:${regionColor(r)}"></span>${esc(r)}`;
+  S.allRegions.forEach(r=>{const b=document.createElement('button');b.className='chip';b.dataset.r=r;b.setAttribute('aria-pressed',S.regions.has(r));b.innerHTML=`<span class="dot" style="background:${regionColor(r)}"></span>${esc(r)}`;
     b.onclick=()=>{if(S.regions.has(r)){if(S.regions.size>1)S.regions.delete(r)}else S.regions.add(r);buildFilters();renderAll()};c.appendChild(b)});
   const mc=$('#mchips');mc.innerHTML='';
   const ma=document.createElement('button');ma.className='chip m';ma.textContent='ทุกเดือน';ma.setAttribute('aria-pressed',S.months.size===MONTHS.length);ma.onclick=()=>{S.months=new Set(MONTHS);buildFilters();renderAll()};mc.appendChild(ma);
@@ -297,6 +309,7 @@ function buildFilters(){
 document.querySelectorAll('input[data-lbl]').forEach(i=>{i.checked=!!S.lbl[i.dataset.lbl];i.onchange=()=>{S.lbl[i.dataset.lbl]=i.checked;renderAll()}});
 $('#thr').oninput=e=>{S.thr=(+e.target.value||0)/100;renderAll()};
 $('#q').oninput=e=>{S.q=e.target.value.trim().toLowerCase();renderTable()};
+$('#btnColorReset').onclick=()=>{COLORS={};saveColors();buildColors();buildFilters();renderAll()};
 $('#btnUp').onclick=()=>$('#upPanel').classList.toggle('open');
 $('#btnClose').onclick=()=>$('#upPanel').classList.remove('open');
 $('#btnReset').onclick=()=>{try{localStorage.removeItem(LS_DATA)}catch(e){};setData(fromDefault(),{name:'ข้อมูลตั้งต้น',at:null});$('#upMsg').className='msg ok';$('#upMsg').textContent='คืนค่าข้อมูลตั้งต้นแล้ว'};
@@ -332,7 +345,7 @@ function svgIn(el,w,h){el.innerHTML='';return d3.select(el).append('svg').attr('
 function axisStyle(g){g.selectAll('text').style('fill','var(--text2)').style('font-size','11px');g.selectAll('line,path').style('stroke','var(--grid)')}
 function resolveC(c){if(c&&c.startsWith('var(')){const n=c.slice(4,-1).trim();return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}return c}
 function lumi(hex){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(x=>x+x).join('');const q=[0,2,4].map(i=>parseInt(hex.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*q[0]+.7152*q[1]+.0722*q[2]}
-function seriesText(sel,c){const col=resolveC(c)||'#888',sf=resolveC('var(--surface)')||'#fff';const ok=/^#[0-9a-f]{3,6}$/i;const L=ok.test(col)?lumi(col):0,LS=ok.test(sf)?lumi(sf):1;const cr=(Math.max(L,LS)+.05)/(Math.min(L,LS)+.05);sel.style('fill',col);if(cr<2.2)sel.style('stroke',LS>.5?'#8a8a8a':'#9a9a9a').attr('stroke-width',1.2).style('paint-order','stroke').attr('stroke-linejoin','round');return sel}
+function seriesText(sel,c){return sel.style('fill',resolveC(c)||'#888')}
 function labelsNoOverlap(items,gap=13){items.sort((a,b)=>a.y-b.y);for(let i=1;i<items.length;i++)if(items[i].y<items[i-1].y+gap)items[i].y=items[i-1].y+gap;return items}
 function emptyMsg(el,t){el.innerHTML=`<div class="empty">${t}</div>`}
 
@@ -385,7 +398,9 @@ function monthBars(el,months,data){
       const fm=v=>(v/1e6).toFixed(1);
       svg.append('text').attr('x',bx+x1('t')+x1.bandwidth()/2).attr('y',y(d.t)-5).attr('text-anchor','middle').style('fill','var(--text2)').style('font-size','10.5px').style('font-weight','600').text(fm(d.t));
       svg.append('text').attr('x',bx+x1('a')+x1.bandwidth()/2).attr('y',y(d.a)-5).attr('text-anchor','middle').style('fill','var(--text)').style('font-size','10.5px').style('font-weight','600').text(fm(d.a));
-      svg.append('text').attr('x',bx+x1('a')+x1.bandwidth()/2).attr('y',y(d.a)+15).attr('text-anchor','middle').style('fill','var(--accent-ink)').style('font-size','9.5px').style('font-weight','700').text(pct(d.pct,2));
+      {const cx=bx+x1('a')+x1.bandwidth()/2,bh=h-m.b-y(d.a),vert=x1.bandwidth()<46&&bh>60;
+       const tx=svg.append('text').style('fill','var(--accent-ink)').style('font-size','10px').style('font-weight','700').attr('text-anchor',vert?'start':'middle').text(pct(d.pct,2));
+       if(vert)tx.attr('transform',`translate(${cx+3.5},${y(d.a)+8}) rotate(-90)`).attr('transform',`translate(${cx+3.5},${h-m.b-8}) rotate(-90)`);else tx.attr('x',cx).attr('y',y(d.a)+15)}
     }
     svg.append('rect').attr('x',bx-4).attr('y',m.t).attr('width',x0.bandwidth()+8).attr('height',h-m.t-m.b).attr('fill','transparent')
      .on('pointermove',ev=>showTip(`<div class="h">${esc(d.m)}</div>`+trow('var(--muted)','เป้าค่างวด','฿'+fmtInt(d.t))+trow('var(--accent)','เก็บได้','฿'+fmtInt(d.a))+trow('','ขาดเป้า','฿'+fmtInt(d.t-d.a))+trow('','% เก็บได้',pct(d.pct))+trow('','สัญญาเก็บได้',fmtInt(d.k)+' / '+fmtInt(d.n)),ev))
