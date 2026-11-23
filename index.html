@@ -71,6 +71,11 @@
   --s1:#2faa62;--s2:#ff9a3c;--s3:#4cb8ff;--s4:#8266de;--s5:#d55181;--s6:#d95926;--s7:#9aa0a6;--s8:#e66767;
   --shadow:none;color-scheme:dark;
 }
+[data-theme="light"],[data-theme="sand"],[data-theme="rose"],[data-theme="mint"],[data-theme="slate"],:root{--cP:#35b585;--cSM:#f2b01e;--cNPL:#ef6b5f}
+.sechead{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:flex-end;justify-content:space-between;margin:30px 0 14px;padding-top:12px;border-top:2px solid var(--border)}
+.sech{font-size:19px;font-weight:700;margin:0}
+body.no-debt #debtSec{display:none}
+.mt{width:100%}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -182,7 +187,7 @@ label.radio{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:
   <div class="card" id="emptyState"><h2>ยังไม่มีข้อมูล</h2><div class="hint" style="margin:6px 0 12px">กดปุ่ม "อัปโหลด / อัปเดตข้อมูล" หรือลากไฟล์ .xlsx / .csv มาวางที่หน้านี้ เพื่อสร้าง dashboard (รีเฟรชหน้าแล้วข้อมูลจะหาย ต้องอัปโหลดใหม่)</div></div>
   <section class="card panel" id="upPanel">
     <h2>อัปเดตข้อมูล</h2>
-    <div class="hint">รองรับไฟล์ .xlsx / .xls / .csv ที่มีหัวคอลัมน์: เดือน, ภาค, กลุ่ม, สัญญาทั้งหมด, เป้าค่างวด, เก็บได้, เก็บได้จำนวน (คอลัมน์ % ระบบคำนวณใหม่ให้เอง)</div>
+    <div class="hint">รองรับไฟล์ .xlsx / .xls / .csv ที่มีหัวคอลัมน์: เดือน, ภาค, กลุ่ม, สัญญาทั้งหมด, เป้าค่างวด, เก็บได้, เก็บได้จำนวน (คอลัมน์ % ระบบคำนวณเอง) · ถ้ามีข้อมูลชั้นหนี้ 4 ชุด (จำนวนสัญญา / เป้าค่างวด / จำนวนสัญญาที่เก็บได้ / เก็บค่างวดได้ ชุดละ 16 ชั้น 01–12, 14, 15, 17, 18) จะแสดงการวิเคราะห์ชั้นหนี้เพิ่ม</div>
     <div class="drop" id="drop" tabindex="0" role="button">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</div>
     <input type="file" id="file" accept=".xlsx,.xls,.csv" hidden>
     <div class="row">
@@ -222,6 +227,28 @@ label.radio{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:
     <div class="card c6"><div class="ch"><h2>ขนาดพอร์ต vs % เก็บได้ (รายกลุ่ม)</h2><label class="tgl"><input type="checkbox" data-lbl="scatter"> แสดงเลข %</label></div><div class="hint">แกน X = จำนวนสัญญา · แกน Y = % เก็บได้ · เส้นประ = ค่าเฉลี่ยรวม · ชี้ที่จุดเพื่อดูรายละเอียด</div><div class="chart" id="chScatter"></div><div class="legend" id="lgScatter"></div></div>
   </div>
 
+  <section id="debtSec">
+  <div class="sechead"><div><h2 class="sech">วิเคราะห์ชั้นหนี้ (P / SM / NPL)</h2><div class="sub">P = ชั้น 01, 02 · SM = ชั้น 03, 04, 14, 17, 18 · NPL = ชั้น 05–12, 15 · ใช้เดือนและภาคที่เลือกด้านบน</div></div>
+    <div class="fgroup"><span class="flabel">ฐานคำนวณสัดส่วน</span><select id="selBase" aria-label="ฐานคำนวณสัดส่วน"><option value="n">จำนวนสัญญา</option><option value="t">เป้าค่างวด (บาท)</option></select></div></div>
+  <div class="kpis" id="dKpis"></div>
+  <div class="card" style="margin-bottom:16px"><h2>ข้อสังเกตและข้อเสนอแนะด้านชั้นหนี้</h2><div class="hint" id="dInsHint"></div><div class="insights" id="dIns"></div></div>
+  <div class="grid">
+    <div class="card c6"><div class="ch"><h2>สัดส่วนชั้นหนี้ รายเดือน</h2><label class="tgl"><input type="checkbox" data-lbl="dMix"> แสดงเลข %</label></div><div class="hint" id="hDMix"></div><div class="legend" id="lgDMix"></div><div class="chart" id="chDMix"></div></div>
+    <div class="card c6"><div class="ch"><h2>% เก็บได้ แยกชั้นหนี้ รายเดือน</h2><label class="tgl"><input type="checkbox" data-lbl="dLine"> แสดงเลข %</label></div><div class="hint">ยอดเก็บได้ ÷ เป้าค่างวด ของแต่ละชั้น · ชี้ที่จุดเพื่อดูค่า</div><div class="legend" id="lgDLine"></div><div class="chart" id="chDLine"></div></div>
+  </div>
+  <div class="grid">
+    <div class="card c7"><div class="ch"><h2>ชั้นหนี้ละเอียด (16 ชั้น)</h2><label class="tgl"><input type="checkbox" data-lbl="dBuck"> แสดงตัวเลข</label></div>
+      <div class="hint" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="flabel">ตัวชี้วัด</span><select id="selMetric" aria-label="ตัวชี้วัดรายชั้นหนี้"><option value="pct">% เก็บได้ (ยอดเงิน)</option><option value="cpct">% สัญญาที่เก็บได้</option><option value="n">จำนวนสัญญา</option><option value="t">เป้าค่างวด (฿)</option><option value="a">เก็บได้ (฿)</option><option value="gap">ยอดขาดเป้า (฿)</option></select><span id="hDBuck"></span></div>
+      <div class="legend" id="lgDBuck"></div><div class="chart" id="chDBuck"></div></div>
+    <div class="card c5"><div class="ch"><h2>สัดส่วนชั้นหนี้ แยกภาค</h2><label class="tgl"><input type="checkbox" data-lbl="dRegion"> แสดงเลข %</label></div><div class="hint" id="hDReg"></div><div class="legend" id="lgDReg"></div><div class="chart" id="chDReg"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px"><h2>สรุป ภาค × ชั้นหนี้</h2><div class="hint" id="hDRegT"></div><div class="twrap" style="max-height:none"><table class="mini" id="tblDReg"></table></div></div>
+  <div class="grid">
+    <div class="card c6"><div class="ch"><h2>กลุ่ม SM ที่เก็บไม่ได้สูงสุด</h2><label class="tgl"><input type="checkbox" data-lbl="dSM"> แสดงตัวเลข</label></div><div class="hint">฿ ยอดขาดเป้าในชั้น SM · ควรเร่งก่อนไหลเป็น NPL · คลิกแท่งเพื่อดูแนวโน้มกลุ่ม</div><div class="chart" id="chDSM"></div></div>
+    <div class="card c6"><div class="ch"><h2>กลุ่มที่สัดส่วน NPL สูงสุด</h2><label class="tgl"><input type="checkbox" data-lbl="dNPL"> แสดงเลข %</label></div><div class="hint" id="hDNPL"></div><div class="chart" id="chDNPL"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px"><h2>ชั้นหนี้รายกลุ่ม</h2><div class="hint">สัดส่วนตามฐานที่เลือกด้านบน · % เก็บได้ของแต่ละชั้น · คลิกหัวคอลัมน์เพื่อเรียง · คลิกแถวเพื่อดูแนวโน้มกลุ่ม · ใช้ช่องค้นหาในตารางความร้อนด้านล่าง</div><div class="twrap"><table id="tblDGrp"></table></div></div>
+</section>
   <div class="card" style="margin-bottom:16px"><h2>ข้อเสนอแนะจากข้อมูล</h2><div class="hint" id="recHint"></div><div class="insights" id="recs"></div></div>
   <div class="grid">
     <div class="card c6"><div class="ch"><h2>กลุ่มที่ควรโฟกัสก่อน: ยอดขาดเป้าสูงสุด</h2><label class="tgl"><input type="checkbox" data-lbl="pareto"> แสดงตัวเลข</label></div><div class="hint">฿ ขาดเป้า (ในวงเล็บ = สัดส่วนสะสมของยอดขาดเป้าทั้งหมด) · คลิกแท่งเพื่อดูแนวโน้มกลุ่ม</div><div class="chart" id="chPareto"></div></div>
@@ -250,7 +277,7 @@ const LS_DATA='collect_dash_data_v1', LS_THEME='collect_dash_theme_v1';
 // ---------- state ----------
 let DATA=[]; // {m,r,g,n,t,k,a}  n=สัญญาทั้งหมด t=เป้า k=เก็บได้(สัญญา) a=เก็บได้จำนวน(บาท)
 let META={name:'ข้อมูลตั้งต้น',at:null};
-const S={theme:'light',regions:new Set(),allRegions:[],months:new Set(),thr:.5,group:null,q:'',sort:{key:'g',dir:1},lbl:{line:true,bars:true,region:true,top:true,bot:true,move:true,scatter:false,group:true,pareto:true}};
+const S={theme:'light',regions:new Set(),allRegions:[],months:new Set(),thr:.5,group:null,q:'',sort:{key:'g',dir:1},base:'n',metric:'pct',dsort:{key:'g',dir:1},lbl:{dMix:true,dLine:true,dBuck:true,dRegion:true,dSM:true,dNPL:true,line:true,bars:true,region:true,top:true,bot:true,move:true,scatter:false,group:true,pareto:true}};
 let MONTHS=[],REGIONS=[];
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -295,23 +322,43 @@ function persist(){/* ไม่เก็บข้อมูลที่อัป�
 // ---------- parse upload ----------
 const HEAD={m:['เดือน','month'],r:['ภาค','region'],g:['กลุ่ม','group'],n:['สัญญาทั้งหมด','contracts'],t:['เป้าค่างวด','เป้า','target'],k:['เก็บได้','collectedcontracts'],a:['เก็บได้จำนวน','เก็บได้(บาท)','amount']};
 const num=v=>{if(v==null||v==='')return 0;const x=Number(String(v).replace(/[,\s฿%]/g,''));return isNaN(x)?0:x};
-function parseRows(json){
-  if(!json.length)throw new Error('ไม่พบข้อมูลในไฟล์');
-  const keys=Object.keys(json[0]);
-  const norm=s=>String(s).replace(/\s+/g,'').toLowerCase();
+let BUCKETS=[];
+function parseSheet(aoa){
+  const norm=s=>String(s??'').replace(/\s+/g,'').toLowerCase();
+  let hi=aoa.findIndex(r=>r&&r.some(c=>norm(c)==='เดือน')&&r.some(c=>norm(c)==='ภาค')&&r.some(c=>norm(c)==='กลุ่ม'));
+  if(hi<0)hi=0;
+  const head=(aoa[hi]||[]).map(c=>String(c??'').trim());
   const map={};
-  for(const f in HEAD){const hit=keys.find(k=>HEAD[f].some(h=>norm(k)===norm(h)));if(hit)map[f]=hit}
+  for(const f in HEAD){const i=head.findIndex(h=>HEAD[f].some(x=>norm(h)===norm(x)));if(i>=0)map[f]=i}
   const need=['m','r','g','n','t','k','a'];
-  const miss=need.filter(f=>!map[f]);
-  if(miss.length){ if(keys.length>=7){need.forEach((f,i)=>map[f]=keys[i])} else throw new Error('ไม่พบคอลัมน์: '+miss.map(f=>HEAD[f][0]).join(', ')) }
+  const miss=need.filter(f=>map[f]==null);
+  if(miss.length){ if(head.length>=7){need.forEach((f,i)=>map[f]=i)} else throw new Error('ไม่พบคอลัมน์: '+miss.map(f=>HEAD[f][0]).join(', ')) }
+  // ---- debt buckets (4 blocks x N classes)
+  const codeIdx=[];head.forEach((h,i)=>{if(/^\d{2}(\s|$)/.test(h))codeIdx.push(i)});
+  const runs=[];let cur=null,prev='';
+  codeIdx.forEach(i=>{const c=head[i].slice(0,2);if(!cur||c<=prev||i!==cur[cur.length-1]+1){cur=[];runs.push(cur)}cur.push(i);prev=c});
+  let bk=null;
+  if(runs.length>=4&&runs[0].length>=2){
+    const lab=aoa[hi-1]||[];
+    const kinds=runs.slice(0,4).map((run,ix)=>{let s='';for(let j=run[0];j>=0&&!s;j--){if(lab[j]!=null&&String(lab[j]).trim())s=String(lab[j])}
+      s=norm(s);const d='ntka'[ix];if(!s)return d;if(s.includes('ที่เก็บได้'))return 'k';if(s.includes('เก็บค่างวด'))return 'a';if(s.includes('เป้า'))return 't';if(s.includes('สัญญา'))return 'n';return d});
+    const ks=new Set(kinds).size===4?kinds:['n','t','k','a'];
+    const pos={};ks.forEach((kd,ix)=>{const mp={};runs[ix].forEach(i=>mp[head[i].slice(0,2)]=i);pos[kd]=mp});
+    bk={codes:runs[0].map(i=>head[i].slice(0,2)),labels:runs[0].map(i=>head[i]),pos};
+  }
   const out=[];
-  for(const r of json){
+  for(const r of aoa.slice(hi+1)){
+    if(!r)continue;
     const m=String(r[map.m]??'').trim(),rg=String(r[map.r]??'').trim(),g=String(r[map.g]??'').trim();
     if(!m||!rg||!g)continue;
-    out.push({m,r:rg,g,n:num(r[map.n]),t:num(r[map.t]),k:num(r[map.k]),a:num(r[map.a])});
+    const row={m,r:rg,g,n:num(r[map.n]),t:num(r[map.t]),k:num(r[map.k]),a:num(r[map.a])};
+    if(bk)row.bk=bk.codes.map(c=>['n','t','k','a'].map(kd=>{const i=bk.pos[kd][c];return i==null?0:num(r[i])}));
+    out.push(row);
   }
   if(!out.length)throw new Error('ไม่พบแถวข้อมูลที่ใช้ได้');
-  return out;
+  let warn='';
+  if(bk){const sa=d3.sum(out,d=>d.a),sb=d3.sum(out,d=>d3.sum(d.bk,v=>v[3]));if(sa&&Math.abs(sa-sb)/sa>.005)warn=' · ⚠ ผลรวมชั้นหนี้ไม่ตรงกับยอดรวม (ต่างกัน '+(Math.abs(sa-sb)/sa*100).toFixed(1)+'%)'}
+  return {rows:out,bk,warn};
 }
 async function handleFile(file){
   const msg=$('#upMsg');msg.className='msg';msg.textContent='กำลังอ่านไฟล์…';
@@ -319,19 +366,24 @@ async function handleFile(file){
     if(typeof XLSX==='undefined')throw new Error('โหลดตัวอ่านไฟล์ไม่สำเร็จ (ต้องออนไลน์)');
     const buf=await file.arrayBuffer();
     const wb=XLSX.read(buf,{type:'array'});
-    let best=null;
-    for(const n of wb.SheetNames){const j=XLSX.utils.sheet_to_json(wb.Sheets[n],{defval:null});if(!best||j.length>best.length)best=j}
-    const rows=parseRows(best);
+    let best=null,lastErr=null;
+    for(const n of wb.SheetNames){try{const p=parseSheet(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null,raw:true}));if(!best||p.rows.length>best.rows.length)best=p}catch(e){lastErr=e}}
+    if(!best)throw lastErr||new Error('ไม่พบข้อมูลในไฟล์');
+    const rows=best.rows;
+    const newCodes=best.bk?best.bk.codes.join(','):null;
+    if(best.bk)BUCKETS=best.bk.codes.map((c,i)=>({code:c,label:best.bk.labels[i]}));
     const mode=document.querySelector('input[name=mode]:checked').value;
     let merged=rows;
-    if(mode==='merge'){const mp=new Map(DATA.map(d=>[d.m+'|'+d.g,d]));rows.forEach(d=>mp.set(d.m+'|'+d.g,d));merged=[...mp.values()]}
+    if(mode==='merge'){
+      const keep=DATA.map(d=>{if(d.bk&&(!newCodes||d.bk.length!==best.bk.codes.length)){const c={...d};delete c.bk;return c}return d});
+      const mp=new Map(keep.map(d=>[d.m+'|'+d.g,d]));rows.forEach(d=>mp.set(d.m+'|'+d.g,d));merged=[...mp.values()]}
     const prevM=new Set(DATA.map(d=>d.m));
     setData(merged,{name:file.name,at:new Date().toISOString()});
     persist();
     const newM=[...new Set(rows.map(d=>d.m))].filter(m=>!prevM.has(m));
     if(newM.length)S.months=new Set([newM.sort((a,b)=>monthKey(a)-monthKey(b)).pop()]);
     buildFilters();renderAll();
-    msg.className='msg ok';msg.textContent=`อ่านสำเร็จ ${fmtInt(rows.length)} แถว จาก "${file.name}" · รวมทั้งหมดตอนนี้ ${fmtInt(DATA.length)} แถว / ${MONTHS.length} เดือน`;
+    msg.className='msg ok';msg.textContent=`อ่านสำเร็จ ${fmtInt(rows.length)} แถว จาก "${file.name}" · รวมทั้งหมดตอนนี้ ${fmtInt(DATA.length)} แถว / ${MONTHS.length} เดือน · ${best.bk?'พบข้อมูลชั้นหนี้ '+best.bk.codes.length+' ชั้น':'ไม่พบข้อมูลชั้นหนี้ในไฟล์ (ส่วนวิเคราะห์ชั้นหนี้จะไม่แสดง)'}${best.warn}`;
   }catch(e){msg.className='msg err';msg.textContent='ผิดพลาด: '+e.message}
 }
 
@@ -353,7 +405,9 @@ function buildFilters(){
 }
 document.querySelectorAll('input[data-lbl]').forEach(i=>{i.checked=!!S.lbl[i.dataset.lbl];i.onchange=()=>{S.lbl[i.dataset.lbl]=i.checked;renderAll()}});
 $('#thr').oninput=e=>{S.thr=(+e.target.value||0)/100;renderAll()};
-$('#q').oninput=e=>{S.q=e.target.value.trim().toLowerCase();renderTable()};
+$('#q').oninput=e=>{S.q=e.target.value.trim().toLowerCase();renderTable();if(hasDebt())renderDTable()};
+$('#selBase').onchange=e=>{S.base=e.target.value;if(hasDebt())renderDebt()};
+$('#selMetric').onchange=e=>{S.metric=e.target.value;if(hasDebt())renderDBuck()};
 $('#btnColorReset').onclick=()=>{COLORS={};saveColors();buildColors();buildFilters();renderAll()};
 $('#btnUp').onclick=()=>$('#upPanel').classList.toggle('open');
 $('#btnClose').onclick=()=>$('#upPanel').classList.remove('open');
@@ -422,7 +476,7 @@ function lineChart(el,months,series,o={}){
    .on('pointermove',ev=>{const [px]=d3.pointer(ev);let best=0,bd=1e9;months.forEach((mo,i)=>{const d=Math.abs(x(mo)-px);if(d<bd){bd=d;best=i}});
       const cx=x(months[best]);cross.attr('x1',cx).attr('x2',cx).style('display',null);ring.selectAll('*').remove();
       let html=`<div class="h">${esc(months[best])}</div>`;
-      series.filter(s=>s.values[best]!=null).sort((a,b)=>b.values[best]-a.values[best]).forEach(s=>{ring.append('path').attr('d',symPath(s.shape||d3.symbolCircle,s.shape?130:60)).attr('transform',`translate(${cx},${y(s.values[best])})`).style('fill',s.color).style('stroke','var(--surface)').attr('stroke-width',2);html+=trow(s.reg?shapeHTML(s.reg):s.color,s.name,pct(s.values[best]))});
+      series.filter(s=>s.values[best]!=null).sort((a,b)=>b.values[best]-a.values[best]).forEach(s=>{ring.append('path').attr('d',symPath(s.shape||d3.symbolCircle,s.shape?130:60)).attr('transform',`translate(${cx},${y(s.values[best])})`).style('fill',s.color).style('stroke','var(--surface)').attr('stroke-width',2);html+=trow(s.sw||(s.reg?shapeHTML(s.reg):s.color),s.name,pct(s.values[best]))});
       showTip(html,ev)})
    .on('pointerleave',()=>{cross.style('display','none');ring.selectAll('*').remove();hideTip()});
 }
@@ -650,10 +704,190 @@ function renderWatch(){
   t.querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>{S.group=tr.dataset.g;renderGroup();renderScatter();renderTable()});
 }
 
+// ================= วิเคราะห์ชั้นหนี้ =================
+const CLS=[
+ {k:'P',name:'ชั้น P',sub:'01–02',color:'var(--cP)',shape:'symbolCircle'},
+ {k:'SM',name:'ชั้น SM',sub:'03, 04, 14, 17, 18',color:'var(--cSM)',shape:'symbolTriangle'},
+ {k:'NPL',name:'ชั้น NPL',sub:'05–12, 15',color:'var(--cNPL)',shape:'symbolSquare'}];
+const CLS_P=['01','02'],CLS_SM=['03','04','14','17','18'];
+const classOf=c=>CLS_P.includes(c)?'P':CLS_SM.includes(c)?'SM':'NPL';
+const clsDef=k=>CLS.find(c=>c.k===k);
+const clsSym=(k,size=64)=>{const c=clsDef(k);return `<span class="sh"><svg width="12" height="12" viewBox="-6.5 -6.5 13 13"><path d="${symPath(d3[c.shape],size)}" style="fill:${c.color}"/></svg></span>`};
+const hasDebt=()=>DATA.some(d=>d.bk)&&BUCKETS.length>0;
+const baseName=()=>S.base==='n'?'จำนวนสัญญา':'เป้าค่างวด';
+const shOf=o=>S.base==='n'?o.sn:o.st;
+const z0=()=>({n:0,t:0,k:0,a:0});
+function clsAgg(rows){
+  const r={P:z0(),SM:z0(),NPL:z0()};let cnt=0;
+  rows.forEach(d=>{if(!d.bk)return;cnt++;d.bk.forEach((v,i)=>{const o=r[classOf(BUCKETS[i].code)];o.n+=v[0];o.t+=v[1];o.k+=v[2];o.a+=v[3]})});
+  const tot=z0();CLS.forEach(c=>{const o=r[c.k];tot.n+=o.n;tot.t+=o.t;tot.k+=o.k;tot.a+=o.a});
+  [...CLS.map(c=>r[c.k]),tot].forEach(o=>{o.pct=o.t?o.a/o.t:null;o.cpct=o.n?o.k/o.n:null;o.gap=o.t-o.a});
+  CLS.forEach(c=>{const o=r[c.k];o.sn=tot.n?o.n/tot.n:0;o.st=tot.t?o.t/tot.t:0;o.sg=tot.gap>0?o.gap/tot.gap:0});
+  r.tot=tot;r.cnt=cnt;return r;
+}
+function bkAgg(rows){const b=BUCKETS.map(()=>({n:0,t:0,k:0,a:0}));rows.forEach(d=>{if(d.bk)d.bk.forEach((v,i)=>{b[i].n+=v[0];b[i].t+=v[1];b[i].k+=v[2];b[i].a+=v[3]})});return b}
+const dRows=()=>curRows().filter(d=>d.bk);
+function byGroup(rows){const m=new Map();rows.forEach(d=>{if(!m.has(d.g))m.set(d.g,{g:d.g,r:d.r,rows:[]});m.get(d.g).rows.push(d)});return [...m.values()]}
+const clsLegend=()=>CLS.map(c=>`<span>${clsSym(c.k)}${c.name} <span style="color:var(--muted)">(${c.sub})</span></span>`).join('');
+const colMix=(c,v,lo,hi)=>`background:color-mix(in srgb,${c} ${Math.round(10+((v-lo)/((hi-lo)||1))*55)}%,var(--surface))`;
+
+function stackV(el,cats,get){
+  const w=W(el),h=hh(el,300),m={l:42,r:8,t:12,b:26};
+  if(!cats.length)return emptyMsg(el,'ไม่มีข้อมูล');
+  const x=d3.scaleBand().domain(cats.map(c=>c.key)).range([m.l,w-m.r]).padding(.3),y=d3.scaleLinear().domain([0,1]).range([h-m.b,m.t]);
+  const svg=svgIn(el,w,h);
+  axisStyle(svg.append('g').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d=>Math.round(d*100)+'%').tickSize(-(w-m.l-m.r)).tickPadding(8)).call(g=>g.select('.domain').remove()));
+  axisStyle(svg.append('g').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).tickFormat(k=>cats.find(c=>c.key===k).label).tickSize(0).tickPadding(8)).call(g=>g.select('.domain').style('stroke','var(--border)')));
+  cats.forEach(c=>{const g=get(c);let acc=0;
+    CLS.forEach(cl=>{const v=g.s[cl.k]||0;const y1=y(acc+v),y0=y(acc),hh2=Math.max(0,y0-y1-2);
+      svg.append('rect').attr('x',x(c.key)).attr('y',y1+1).attr('width',x.bandwidth()).attr('height',hh2).attr('rx',3).style('fill',cl.color);
+      if(S.lbl.dMix&&hh2>14)svg.append('text').attr('x',x(c.key)+x.bandwidth()/2).attr('y',y1+1+hh2/2+4).attr('text-anchor','middle').style('fill','#111').style('font-size',Math.max(8,Math.min(11,x.bandwidth()/5))+'px').style('font-weight','600').text((v*100).toFixed(1)+'%');
+      acc+=v});
+    svg.append('rect').attr('x',x(c.key)-6).attr('y',m.t).attr('width',x.bandwidth()+12).attr('height',h-m.t-m.b).attr('fill','transparent').on('pointermove',ev=>showTip(g.tip,ev)).on('pointerleave',hideTip)});
+}
+function stackH(el,rows){
+  if(!rows.length)return emptyMsg(el,'ไม่มีข้อมูล');
+  const w=W(el),rh=isExp(el)?56:44,m={l:w<420?60:70,r:8,t:4,b:4},h=rows.length*rh+m.t+m.b;
+  const x=d3.scaleLinear().domain([0,1]).range([m.l,w-m.r]);const svg=svgIn(el,w,h);
+  rows.forEach((r,i)=>{const yy=m.t+i*rh;let acc=0;
+    svg.append('text').attr('x',m.l-8).attr('y',yy+rh/2+4).attr('text-anchor','end').style('fill','var(--text2)').style('font-size','12px').text(r.label);
+    CLS.forEach(cl=>{const v=r.s[cl.k]||0;const x0=x(acc),ww=Math.max(0,x(acc+v)-x(acc)-2);
+      svg.append('rect').attr('x',x0+1).attr('y',yy+6).attr('width',ww).attr('height',rh-12).attr('rx',3).style('fill',cl.color);
+      if(S.lbl.dRegion&&ww>34)svg.append('text').attr('x',x0+1+ww/2).attr('y',yy+rh/2+4).attr('text-anchor','middle').style('fill','#111').style('font-size','10.5px').style('font-weight','600').text((v*100).toFixed(1)+'%');
+      acc+=v});
+    svg.append('rect').attr('x',0).attr('y',yy).attr('width',w).attr('height',rh).attr('fill','transparent').on('pointermove',ev=>showTip(r.tip,ev)).on('pointerleave',hideTip)});
+}
+function vbars(el,items,o){
+  const w=W(el),h=hh(el,300),m={l:46,r:8,t:20,b:26};
+  if(!items.length)return emptyMsg(el,'ไม่มีข้อมูล');
+  const x=d3.scaleBand().domain(items.map(d=>d.code)).range([m.l,w-m.r]).padding(.22);
+  const mx=d3.max(items,d=>d.v)||1,y=d3.scaleLinear().domain([0,mx*1.12]).nice().range([h-m.b,m.t]);
+  const svg=svgIn(el,w,h);
+  axisStyle(svg.append('g').attr('transform',`translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(o.axis).tickSize(-(w-m.l-m.r)).tickPadding(8)).call(g=>g.select('.domain').remove()));
+  axisStyle(svg.append('g').attr('transform',`translate(0,${h-m.b})`).call(d3.axisBottom(x).tickSize(0).tickPadding(8)).call(g=>g.select('.domain').style('stroke','var(--border)')));
+  items.forEach(d=>{const yy=y(d.v),hh2=Math.max(0,h-m.b-yy);
+    svg.append('path').attr('d',(()=>{const r=Math.min(4,x.bandwidth()/2,hh2),bx=x(d.code),bw=x.bandwidth();return `M${bx},${h-m.b}V${yy+r}Q${bx},${yy} ${bx+r},${yy}H${bx+bw-r}Q${bx+bw},${yy} ${bx+bw},${yy+r}V${h-m.b}Z`})()).style('fill',d.color);
+    if(o.labels)svg.append('text').attr('x',x(d.code)+x.bandwidth()/2).attr('y',yy-5).attr('text-anchor','middle').style('fill','var(--text)').style('font-size',Math.max(8,Math.min(10.5,x.bandwidth()/3.4))+'px').style('font-weight','600').text(o.fmt(d.v));
+    svg.append('rect').attr('x',x(d.code)-4).attr('y',m.t).attr('width',x.bandwidth()+8).attr('height',h-m.t-m.b).attr('fill','transparent').on('pointermove',ev=>showTip(d.tip,ev)).on('pointerleave',hideTip)});
+}
+
+function renderDKpis(){
+  const c=clsAgg(dRows()),pr=prevRowsF(),p=pr?clsAgg(pr.filter(d=>d.bk)):null,hasP=p&&p.tot.t>0;
+  const arrow=(v,suffix)=>v==null?'':`<span class="${v>=0?'up':'down'}">${v>=0?'▲':'▼'} ${(Math.abs(v)*100).toFixed(1)}</span>`;
+  const cards=CLS.map(cl=>{const o=c[cl.k],q=hasP?p[cl.k]:null;
+    return `<div class="card kpi"><div class="l">${clsSym(cl.k)}${cl.name} <span style="color:var(--muted)">(${cl.sub})</span></div>
+     <div class="v">${pct(shOf(o))}<small>ของ${baseName()}</small></div>
+     <div class="d">เก็บได้ <b>${pct(o.pct)}</b> (ยอดเงิน) · ${pct(o.cpct)} (สัญญา)</div>
+     <div class="d">${q?`สัดส่วน ${arrow(shOf(o)-shOf(q))} จุด · % เก็บ ${arrow((o.pct??0)-(q.pct??0))} จุด vs ${esc(prevLabel())}`:'—'}</div></div>`}).join('');
+  const gapCard=`<div class="card kpi"><div class="l">ยอดขาดเป้ารวม แยกตามชั้น</div><div class="v">${fmtM(c.tot.gap)}<small>บาท</small></div>
+    <div class="d">${CLS.map(cl=>`${clsSym(cl.k)}${cl.k} <b>${pct(c[cl.k].sg,0)}</b>`).join(' &nbsp; ')}</div><div class="d">สัดส่วนของยอดขาดเป้าทั้งหมด</div></div>`;
+  $('#dKpis').innerHTML=cards+gapCard;
+}
+function renderDIns(){
+  const rows=dRows(),c=clsAgg(rows),pr=prevRowsF(),p=pr?clsAgg(pr.filter(d=>d.bk)):null,out=[];
+  $('#dInsHint').textContent=`วิเคราะห์จาก${monthLabel()} · ภาคที่เลือก · สัดส่วนอิง${baseName()}`;
+  if(!c.tot.t){$('#dIns').innerHTML='<div class="empty">ไม่มีข้อมูลชั้นหนี้ในช่วงที่เลือก</div>';return}
+  const hasP=p&&p.tot.t>0;
+  out.push(['โครงสร้างพอร์ต',`P <b>${pct(shOf(c.P))}</b> · SM <b>${pct(shOf(c.SM))}</b> · NPL <b>${pct(shOf(c.NPL))}</b> ของ${baseName()}`+(hasP?` · NPL เปลี่ยน <b>${pp(shOf(c.NPL)-shOf(p.NPL))}</b> เทียบ ${esc(prevLabel())}`:'')]);
+  out.push(['อัตราเก็บได้ตามชั้น',`P <b>${pct(c.P.pct)}</b> · SM <b>${pct(c.SM.pct)}</b> · NPL <b>${pct(c.NPL.pct)}</b> · ชั้น P เก็บได้สูงกว่า NPL ราว <b>${(((c.P.pct??0)-(c.NPL.pct??0))*100).toFixed(0)} จุด</b>`]);
+  out.push(['ยอดขาดเป้าอยู่ที่ชั้นไหน',`ยอดขาดเป้า ฿${fmtM(c.tot.gap)}: P <b>${pct(c.P.sg,0)}</b> · SM <b>${pct(c.SM.sg,0)}</b> · NPL <b>${pct(c.NPL.sg,0)}</b> (NPL มีแค่ ${pct(c.NPL.st,0)} ของเป้า แต่ถือ ${pct(c.NPL.sg,0)} ของยอดขาด)`]);
+  if(hasP){let mix=0,rate=0;const rc={};CLS.forEach(({k})=>{mix+=(c[k].st-p[k].st)*(p[k].pct??0);rc[k]=c[k].st*((c[k].pct??0)-(p[k].pct??0));rate+=rc[k]});
+    out.push(['อะไรทำให้ % รวมเปลี่ยน',`เทียบ ${esc(prevLabel())}: <b>${pp(c.tot.pct-p.tot.pct)}</b> = โครงสร้างชั้นหนี้ ${pp(mix)} + อัตราเก็บ ${pp(rate)} (P ${pp(rc.P)}, SM ${pp(rc.SM)}, NPL ${pp(rc.NPL)})`])}
+  const bk=bkAgg(rows),ag=BUCKETS.map((b,i)=>({...b,pct:bk[i].t?bk[i].a/bk[i].t:null})).filter(b=>+b.code<=12&&b.pct!=null);
+  let best=null;for(let i=1;i<ag.length;i++){const d=ag[i-1].pct-ag[i].pct;if(!best||d>best.d)best={d,a:ag[i-1],b:ag[i]}}
+  if(best)out.push(['จุดที่อัตราเก็บตกแรงสุด',`จากชั้น ${best.a.code} (${pct(best.a.pct)}) เป็นชั้น ${best.b.code} (${pct(best.b.pct)}) ตก <b>${(best.d*100).toFixed(0)} จุด</b> → ควรเร่งติดตามก่อนลูกหนี้หลุดเข้าชั้น ${best.b.code}`]);
+  out.push(['ชั้น SM: กันไม่ให้ไหลเป็น NPL',`SM มี ${fmtInt(c.SM.n)} สัญญา เก็บไม่ได้ ฿${fmtM(c.SM.gap)} · ถ้ายกอัตราเก็บ SM +5 จุด จะได้เพิ่ม <b>฿${fmtM(c.SM.t*.05)}</b> (ภาพรวม +${(c.SM.t*.05/c.tot.t*100).toFixed(2)} จุด) เทียบกับ NPL +5 จุด ได้ ฿${fmtM(c.NPL.t*.05)}`]);
+  const rg=S.allRegions.filter(r=>S.regions.has(r)).map(r=>({r,c:clsAgg(rows.filter(d=>d.r===r))})).filter(x=>x.c.tot.t);
+  if(rg.length>1){const a=[...rg].sort((x,y)=>shOf(y.c.NPL)-shOf(x.c.NPL))[0],b=[...rg].filter(x=>x.c.SM.pct!=null).sort((x,y)=>x.c.SM.pct-y.c.SM.pct)[0];
+    out.push(['ระดับภาค',`<b>${esc(a.r)}</b> มีสัดส่วน NPL สูงสุด (${pct(shOf(a.c.NPL))}) · <b>${esc(b.r)}</b> เก็บชั้น SM ได้ต่ำสุด (${pct(b.c.SM.pct)})`])}
+  const gs=byGroup(rows).map(x=>({...x,c:clsAgg(x.rows)})).filter(x=>x.c.tot.t).sort((a,b)=>shOf(b.c.NPL)-shOf(a.c.NPL));
+  if(gs.length)out.push(['กลุ่มที่ NPL สูง',gs.slice(0,3).map(x=>`<b>${esc(x.g)}</b> ${pct(shOf(x.c.NPL))}`).join(' · ')+' · ควรตั้งเป้าลดสัดส่วน NPL ในกลุ่มเหล่านี้']);
+  const TM=trendM();
+  if(TM.length>1){const ms=TM.map(m=>({m,c:clsAgg(rowsR().filter(d=>d.m===m&&d.bk))})).filter(x=>x.c.tot.t).sort((a,b)=>shOf(b.c.NPL)-shOf(a.c.NPL));
+    if(ms.length>1)out.push(['แนวโน้ม NPL ในช่วงที่เลือก',`สัดส่วน NPL สูงสุดเดือน <b>${esc(ms[0].m)}</b> (${pct(shOf(ms[0].c.NPL))}) ต่ำสุดเดือน <b>${esc(ms[ms.length-1].m)}</b> (${pct(shOf(ms[ms.length-1].c.NPL))})`])}
+  $('#dIns').innerHTML=out.map(([t,h])=>`<div class="ins"><div class="t">${t}</div>${h}</div>`).join('');
+}
+function renderDMix(){
+  const TM=trendM();
+  $('#hDMix').textContent=`สัดส่วนอิง${baseName()} · ภาคที่เลือก · ${selM().length>=2?'เฉพาะเดือนที่เลือก':'ทุกเดือน'}`;
+  $('#lgDMix').innerHTML=clsLegend();
+  const cats=TM.map(m=>({key:m,label:mShort(m)}));
+  stackV($('#chDMix'),cats.filter(c=>clsAgg(rowsR().filter(d=>d.m===c.key&&d.bk)).tot.t),c=>{const a=clsAgg(rowsR().filter(d=>d.m===c.key&&d.bk));
+    return{s:{P:shOf(a.P),SM:shOf(a.SM),NPL:shOf(a.NPL)},tip:`<div class="h">${esc(c.key)}</div>`+CLS.map(cl=>trow(clsSym(cl.k),cl.name,pct(shOf(a[cl.k])))+`<div class="r" style="font-size:11px"><span style="padding-left:20px">${fmtInt(a[cl.k].n)} สัญญา · เป้า ฿${fmtM(a[cl.k].t)}</span></div>`).join('')}});
+}
+function renderDLine(){
+  const TM=trendM();
+  const series=CLS.map(cl=>({name:cl.name,color:cl.color,shape:d3[cl.shape],sw:clsSym(cl.k),w:2.4,values:TM.map(m=>{const a=clsAgg(rowsR().filter(d=>d.m===m&&d.bk));return a[cl.k].pct})}));
+  series.push({name:'รวมทุกชั้น',color:'var(--text2)',dash:'5 4',w:1.75,values:TM.map(m=>clsAgg(rowsR().filter(d=>d.m===m&&d.bk)).tot.pct)});
+  $('#lgDLine').innerHTML=CLS.map(cl=>`<span>${clsSym(cl.k)}${cl.name}</span>`).join('')+'<span><i style="background:var(--text2);height:2px;vertical-align:3px"></i>รวมทุกชั้น</span>';
+  lineChart($('#chDLine'),TM,series,{labels:S.lbl.dLine});
+}
+const MET={pct:{l:'% เก็บได้ (ยอดเงิน)',f:v=>(v*100).toFixed(1)+'%',ax:d=>Math.round(d*100)+'%'},cpct:{l:'% สัญญาที่เก็บได้',f:v=>(v*100).toFixed(1)+'%',ax:d=>Math.round(d*100)+'%'},
+  n:{l:'จำนวนสัญญา',f:v=>fmtInt(v),ax:d3.format('~s')},t:{l:'เป้าค่างวด (ล้านบาท)',f:v=>(v/1e6).toFixed(1),ax:d=>d/1e6+'M'},a:{l:'เก็บได้ (ล้านบาท)',f:v=>(v/1e6).toFixed(1),ax:d=>d/1e6+'M'},gap:{l:'ยอดขาดเป้า (ล้านบาท)',f:v=>(v/1e6).toFixed(1),ax:d=>d/1e6+'M'}};
+function renderDBuck(){
+  const bk=bkAgg(dRows()),mt=MET[S.metric]||MET.pct;
+  const order={P:0,SM:1,NPL:2};
+  const items=BUCKETS.map((b,i)=>{const o=bk[i],k=classOf(b.code),cl=clsDef(k);
+    const val=S.metric==='pct'?(o.t?o.a/o.t:0):S.metric==='cpct'?(o.n?o.k/o.n:0):S.metric==='gap'?o.t-o.a:o[S.metric];
+    return{code:b.code,k,v:val,color:cl.color,ord:order[k],tip:`<div class="h">${esc(b.label)}</div>`+trow(clsSym(k),cl.name,'')+trow('','จำนวนสัญญา',fmtInt(o.n))+trow('','สัญญาที่เก็บได้',fmtInt(o.k)+(o.n?' ('+pct(o.k/o.n)+')':''))+trow('','เป้าค่างวด','฿'+fmtInt(o.t))+trow('','เก็บได้','฿'+fmtInt(o.a))+trow('','% เก็บได้ (ยอดเงิน)',o.t?pct(o.a/o.t):'–')}}).sort((a,b)=>a.ord-b.ord||a.code.localeCompare(b.code));
+  $('#hDBuck').textContent=`${mt.l} · ${monthLabel()} · เรียงตามกลุ่ม P → SM → NPL`;
+  $('#lgDBuck').innerHTML=clsLegend()+'<span style="color:var(--muted)">แกน X = รหัสชั้นหนี้ (ชี้เพื่อดูชื่อเต็ม)</span>';
+  vbars($('#chDBuck'),items,{fmt:mt.f,axis:mt.ax,labels:S.lbl.dBuck});
+}
+function renderDReg(){
+  const rows=dRows(),rr=S.allRegions.filter(r=>S.regions.has(r));
+  $('#hDReg').textContent=`สัดส่วนอิง${baseName()} · ${monthLabel()}`;$('#lgDReg').innerHTML=clsLegend();
+  const data=rr.map(r=>{const a=clsAgg(rows.filter(d=>d.r===r));return{label:r,a,s:{P:shOf(a.P),SM:shOf(a.SM),NPL:shOf(a.NPL)}}}).filter(x=>x.a.tot.t).map(x=>({...x,tip:`<div class="h">${esc(x.label)}</div>`+CLS.map(cl=>trow(clsSym(cl.k),cl.name,pct(shOf(x.a[cl.k]))+' · เก็บ '+pct(x.a[cl.k].pct))).join('')}));
+  stackH($('#chDReg'),data);
+}
+function renderDRegTable(){
+  const rows=dRows(),rr=S.allRegions.filter(r=>S.regions.has(r)),t=$('#tblDReg');
+  $('#hDRegT').textContent=`${monthLabel()} · สัดส่วนอิง${baseName()} · สีเข้มของ % เก็บได้ = สูงกว่าภาคอื่นในชั้นเดียวกัน`;
+  const list=rr.map(r=>({r,c:clsAgg(rows.filter(d=>d.r===r))})).filter(x=>x.c.tot.t);
+  if(!list.length){t.innerHTML='<tbody><tr><td class="l">ไม่มีข้อมูล</td></tr></tbody>';return}
+  const tot={r:'รวมที่เลือก',c:clsAgg(rows)};
+  const rng=k=>{const v=list.map(x=>x.c[k].pct).filter(x=>x!=null);return [Math.min(...v),Math.max(...v)]};
+  const r2={P:rng('P'),SM:rng('SM'),NPL:rng('NPL')};
+  const rowH=(x,heat)=>`<tr style="cursor:default"><td>${x.r===tot.r?'<b>'+esc(x.r)+'</b>':shapeHTML(x.r)+esc(x.r)}</td>`+CLS.map(cl=>`<td>${pct(shOf(x.c[cl.k]))}</td>`).join('')+CLS.map(cl=>`<td class="${heat?'heat':''}" style="${heat&&x.c[cl.k].pct!=null?colMix(cl.color,x.c[cl.k].pct,...r2[cl.k]):''}">${pct(x.c[cl.k].pct)}</td>`).join('')+`<td><b>${pct(x.c.tot.pct)}</b></td><td>฿${fmtM(x.c.tot.gap)}</td></tr>`;
+  t.innerHTML=`<thead><tr><th class="l" rowspan="2">ภาค</th><th colspan="3" style="text-align:center">สัดส่วนอิง${baseName()}</th><th colspan="3" style="text-align:center">% เก็บได้ (ยอดเงิน)</th><th rowspan="2">รวม</th><th rowspan="2">ยอดขาดเป้า</th></tr><tr>${CLS.map(c=>`<th>${c.k}</th>`).join('')}${CLS.map(c=>`<th>${c.k}</th>`).join('')}</tr></thead><tbody>${list.map(x=>rowH(x,true)).join('')}${rowH(tot,false)}</tbody>`;
+}
+function renderDLists(){
+  const gs=byGroup(dRows()).map(x=>({...x,c:clsAgg(x.rows)})).filter(x=>x.c.tot.t);
+  const sm=[...gs].sort((a,b)=>b.c.SM.gap-a.c.SM.gap).slice(0,10);
+  hbars($('#chDSM'),sm.map(x=>({label:x.g,value:x.c.SM.gap,color:'var(--cSM)',group:x.g,text:fmtM(x.c.SM.gap),tip:`<div class="h">${esc(x.g)}</div>`+trow(shapeHTML(x.r),x.r,'')+trow(clsSym('SM'),'SM เป้า','฿'+fmtInt(x.c.SM.t))+trow('','SM เก็บได้','฿'+fmtInt(x.c.SM.a))+trow('','% เก็บ SM',pct(x.c.SM.pct))+trow('','สัญญา SM',fmtInt(x.c.SM.n))})),{domain:[0,d3.max(sm,x=>x.c.SM.gap)||1],rightW:70,labels:S.lbl.dSM});
+  const np=[...gs].sort((a,b)=>shOf(b.c.NPL)-shOf(a.c.NPL)).slice(0,10);
+  $('#hDNPL').textContent=`สัดส่วน NPL อิง${baseName()} · ${monthLabel()} · คลิกแท่งเพื่อดูแนวโน้มกลุ่ม`;
+  hbars($('#chDNPL'),np.map(x=>({label:x.g,value:shOf(x.c.NPL),color:'var(--cNPL)',group:x.g,tip:`<div class="h">${esc(x.g)}</div>`+trow(shapeHTML(x.r),x.r,'')+trow(clsSym('NPL'),'NPL สัญญา',fmtInt(x.c.NPL.n))+trow('','NPL เป้า','฿'+fmtInt(x.c.NPL.t))+trow('','% เก็บ NPL',pct(x.c.NPL.pct))})),{domain:[0,d3.max(np,x=>shOf(x.c.NPL))||1],labels:S.lbl.dNPL});
+}
+function renderDTable(){
+  const t=$('#tblDGrp'),sk=S.dsort.key;
+  let list=byGroup(dRows()).map(x=>({...x,c:clsAgg(x.rows)})).filter(x=>x.c.tot.t&&(!S.q||x.g.toLowerCase().includes(S.q)||x.r.toLowerCase().includes(S.q)));
+  const val=x=>sk==='g'?x.g:sk==='r'?x.r:sk==='tot'?x.c.tot.pct:sk==='gap'?x.c.tot.gap:sk.startsWith('s')?shOf(x.c[sk.slice(1)]):x.c[sk.slice(1)].pct;
+  list.sort((a,b)=>{const va=val(a),vb=val(b);if(va==null)return 1;if(vb==null)return -1;return (typeof va==='string'?va.localeCompare(vb,'th',{numeric:true}):va-vb)*S.dsort.dir});
+  const rng=f=>{const v=list.map(f).filter(x=>x!=null);return v.length?[Math.min(...v),Math.max(...v)]:[0,1]};
+  const rs={P:rng(x=>shOf(x.c.P)),SM:rng(x=>shOf(x.c.SM)),NPL:rng(x=>shOf(x.c.NPL))},rp={P:rng(x=>x.c.P.pct),SM:rng(x=>x.c.SM.pct),NPL:rng(x=>x.c.NPL.pct)};
+  const th=(k,txt,cls='')=>`<th class="sort ${cls}" tabindex="0" data-k="${k}">${txt}${sk===k?(S.dsort.dir>0?' ▲':' ▼'):''}</th>`;
+  let h='<thead><tr>'+th('g','กลุ่ม','l')+th('r','ภาค','l')+CLS.map(c=>th('s'+c.k,'% '+c.k+(S.base==='n'?' (สัญญา)':' (เป้า)'))).join('')+CLS.map(c=>th('p'+c.k,'เก็บ '+c.k)).join('')+th('tot','เก็บรวม')+th('gap','ขาดเป้า (฿)')+'</tr></thead><tbody>';
+  for(const x of list){
+    h+=`<tr data-g="${esc(x.g)}" class="${x.g===S.group?'sel':''}"><td>${esc(x.g)}</td><td class="l">${shapeHTML(x.r)}${esc(x.r)}</td>`;
+    CLS.forEach(cl=>{const v=shOf(x.c[cl.k]);h+=`<td class="heat" style="${colMix(cl.color,v,...rs[cl.k])}">${pct(v)}</td>`});
+    CLS.forEach(cl=>{const v=x.c[cl.k].pct;h+=v==null?'<td>–</td>':`<td class="heat" style="${colMix(cl.color,v,...rp[cl.k])}">${pct(v)}</td>`});
+    h+=`<td><b>${pct(x.c.tot.pct)}</b></td><td>${fmtM(x.c.tot.gap)}</td></tr>`;
+  }
+  t.innerHTML=h+'</tbody>';
+  t.querySelectorAll('th.sort').forEach(el=>{const f=()=>{const key=el.dataset.k;S.dsort=S.dsort.key===key?{key,dir:-S.dsort.dir}:{key,dir:(key==='g'||key==='r')?1:-1};renderDTable()};el.onclick=f;el.onkeydown=e=>{if(e.key==='Enter')f()}});
+  t.querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>{S.group=tr.dataset.g;renderGroup();renderScatter();renderTable();t.querySelectorAll('tr.sel').forEach(r=>r.classList.remove('sel'));tr.classList.add('sel')});
+}
+function renderDebt(){
+  const on=hasDebt();document.body.classList.toggle('no-debt',!on);
+  if(!on)return;
+  renderDKpis();renderDIns();renderDMix();renderDLine();renderDBuck();renderDReg();renderDRegTable();renderDLists();renderDTable();
+}
+
 function renderAll(){
   document.body.classList.toggle('is-empty',!DATA.length);
   if(!DATA.length){$('#meta').textContent='ยังไม่มีข้อมูล · อัปโหลดไฟล์เพื่อเริ่มใช้งาน';$('#upPanel').classList.add('open');return}
-  renderKPIs();renderInsights();renderRecs();renderPareto();renderWatch();renderLine();renderBars();renderRegion();renderRank();renderMove();renderScatter();renderGroup();renderTable();
+  renderKPIs();renderInsights();renderRecs();renderPareto();renderWatch();renderLine();renderBars();renderRegion();renderRank();renderMove();renderScatter();renderGroup();renderTable();renderDebt();
 }
 
 // ---------- expand ----------
@@ -675,7 +909,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeExp()});
   let loaded=false;
   try{localStorage.removeItem(LS_DATA)}catch(e){}
   if(!loaded)setData(fromDefault(),{name:'ยังไม่มีข้อมูล',at:null});
-  let t;new ResizeObserver(()=>{clearTimeout(t);t=setTimeout(()=>{renderLine();renderBars();renderRegion();renderRank();renderMove();renderScatter();renderGroup();renderPareto()},120)}).observe(document.getElementById('app'));
+  let t;new ResizeObserver(()=>{clearTimeout(t);t=setTimeout(()=>{renderLine();renderBars();renderRegion();renderRank();renderMove();renderScatter();renderGroup();renderPareto();renderDebt()},120)}).observe(document.getElementById('app'));
 })();
 </script>
 </body>
