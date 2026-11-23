@@ -109,6 +109,7 @@ input[type=number]{width:70px}
 .cp input{width:26px;height:26px;padding:0;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer}
 .mchips{display:flex;flex-wrap:wrap;gap:6px}
 table.mini td,table.mini th{padding:5px 8px}
+#tblDReg{table-layout:fixed;width:100%}#tblDReg th,#tblDReg td{text-align:center;padding:7px 6px}#tblDReg th.l,#tblDReg td:first-child{text-align:left;width:15%;white-space:nowrap}#tblDReg .gl{border-left:1px solid var(--border)}
 .bad{color:var(--down);font-weight:600}
 .xbtn{font:inherit;font-size:14px;line-height:1;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:28px;height:26px;cursor:pointer;flex:none}
 .xbtn:hover{color:var(--text);border-color:var(--accent)}
@@ -734,7 +735,7 @@ const clsLegend=()=>CLS.map(c=>`<span>${clsSym(c.k)}${c.name} <span style="color
 const colMix=(c,v,lo,hi)=>`background:color-mix(in srgb,${c} ${Math.round(10+((v-lo)/((hi-lo)||1))*55)}%,var(--surface))`;
 
 function stackV(el,cats,get){
-  const w=W(el),h=hh(el,300),m={l:42,r:8,t:12,b:26};
+  const w=W(el),h=hh(el,300),m={l:42,r:8,t:22,b:26};
   if(!cats.length)return emptyMsg(el,'ไม่มีข้อมูล');
   const x=d3.scaleBand().domain(cats.map(c=>c.key)).range([m.l,w-m.r]).padding(.3),y=d3.scaleLinear().domain([0,1]).range([h-m.b,m.t]);
   const svg=svgIn(el,w,h);
@@ -743,19 +744,25 @@ function stackV(el,cats,get){
   cats.forEach(c=>{const g=get(c);let acc=0;
     CLS.forEach(cl=>{const v=g.s[cl.k]||0;const y1=y(acc+v),y0=y(acc),hh2=Math.max(0,y0-y1-2);
       svg.append('rect').attr('x',x(c.key)).attr('y',y1+1).attr('width',x.bandwidth()).attr('height',hh2).attr('rx',3).style('fill',cl.color);
-      if(S.lbl.dMix&&hh2>14)svg.append('text').attr('x',x(c.key)+x.bandwidth()/2).attr('y',y1+1+hh2/2+4).attr('text-anchor','middle').style('fill','#111').style('font-size',Math.max(8,Math.min(11,x.bandwidth()/5))+'px').style('font-weight','600').text((v*100).toFixed(1)+'%');
+      if(S.lbl.dMix&&v>0){const fs=Math.max(8,Math.min(11,x.bandwidth()/5)),txt=(v*100).toFixed(1)+'%',cx=x(c.key)+x.bandwidth()/2;
+        if(hh2>=fs+5)svg.append('text').attr('x',cx).attr('y',y1+1+hh2/2+fs*.36).attr('text-anchor','middle').style('fill','#111').style('font-size',fs+'px').style('font-weight','600').text(txt);
+        else if(cl.k===CLS[CLS.length-1].k)svg.append('text').attr('x',cx).attr('y',y1-4).attr('text-anchor','middle').style('fill','var(--text)').style('font-size',fs+'px').style('font-weight','600').text(txt);
+        else svg.append('text').attr('x',x(c.key)+x.bandwidth()+4).attr('y',y1+1+hh2/2+fs*.36).attr('text-anchor','start').style('fill','var(--text)').style('font-size',fs+'px').style('font-weight','600').text(txt)}
       acc+=v});
     svg.append('rect').attr('x',x(c.key)-6).attr('y',m.t).attr('width',x.bandwidth()+12).attr('height',h-m.t-m.b).attr('fill','transparent').on('pointermove',ev=>showTip(g.tip,ev)).on('pointerleave',hideTip)});
 }
 function stackH(el,rows){
   if(!rows.length)return emptyMsg(el,'ไม่มีข้อมูล');
-  const w=W(el),rh=isExp(el)?56:44,m={l:w<420?60:70,r:8,t:4,b:4},h=rows.length*rh+m.t+m.b;
+  const w=W(el),rh=isExp(el)?56:44,m={l:w<420?60:70,r:S.lbl.dRegion?48:8,t:4,b:4},h=rows.length*rh+m.t+m.b;
   const x=d3.scaleLinear().domain([0,1]).range([m.l,w-m.r]);const svg=svgIn(el,w,h);
   rows.forEach((r,i)=>{const yy=m.t+i*rh;let acc=0;
     svg.append('text').attr('x',m.l-8).attr('y',yy+rh/2+4).attr('text-anchor','end').style('fill','var(--text2)').style('font-size','12px').text(r.label);
     CLS.forEach(cl=>{const v=r.s[cl.k]||0;const x0=x(acc),ww=Math.max(0,x(acc+v)-x(acc)-2);
       svg.append('rect').attr('x',x0+1).attr('y',yy+6).attr('width',ww).attr('height',rh-12).attr('rx',3).style('fill',cl.color);
-      if(S.lbl.dRegion&&ww>34)svg.append('text').attr('x',x0+1+ww/2).attr('y',yy+rh/2+4).attr('text-anchor','middle').style('fill','#111').style('font-size','10.5px').style('font-weight','600').text((v*100).toFixed(1)+'%');
+      if(S.lbl.dRegion&&v>0){const txt=(v*100).toFixed(1)+'%',tw=txt.length*6.4+8;
+        if(ww>=tw)svg.append('text').attr('x',x0+1+ww/2).attr('y',yy+rh/2+4).attr('text-anchor','middle').style('fill','#111').style('font-size','10.5px').style('font-weight','600').text(txt);
+        else if(cl.k===CLS[CLS.length-1].k)svg.append('text').attr('x',x(1)+5).attr('y',yy+rh/2+4).attr('text-anchor','start').style('fill','var(--text)').style('font-size','10.5px').style('font-weight','600').text(txt);
+        else svg.append('text').attr('x',x0+1+ww/2).attr('y',yy+5).attr('text-anchor','middle').style('fill','var(--text)').style('font-size','9.5px').style('font-weight','600').text(txt)}
       acc+=v});
     svg.append('rect').attr('x',0).attr('y',yy).attr('width',w).attr('height',rh).attr('fill','transparent').on('pointermove',ev=>showTip(r.tip,ev)).on('pointerleave',hideTip)});
 }
@@ -850,8 +857,8 @@ function renderDRegTable(){
   const tot={r:'รวมที่เลือก',c:clsAgg(rows)};
   const rng=k=>{const v=list.map(x=>x.c[k].pct).filter(x=>x!=null);return [Math.min(...v),Math.max(...v)]};
   const r2={P:rng('P'),SM:rng('SM'),NPL:rng('NPL')};
-  const rowH=(x,heat)=>`<tr style="cursor:default"><td>${x.r===tot.r?'<b>'+esc(x.r)+'</b>':shapeHTML(x.r)+esc(x.r)}</td>`+CLS.map(cl=>`<td>${pct(shOf(x.c[cl.k]))}</td>`).join('')+CLS.map(cl=>`<td class="${heat?'heat':''}" style="${heat&&x.c[cl.k].pct!=null?colMix(cl.color,x.c[cl.k].pct,...r2[cl.k]):''}">${pct(x.c[cl.k].pct)}</td>`).join('')+`<td><b>${pct(x.c.tot.pct)}</b></td><td>฿${fmtM(x.c.tot.gap)}</td></tr>`;
-  t.innerHTML=`<thead><tr><th class="l" rowspan="2">ภาค</th><th colspan="3" style="text-align:center">สัดส่วนอิง${baseName()}</th><th colspan="3" style="text-align:center">% เก็บได้ (ยอดเงิน)</th><th rowspan="2">รวม</th><th rowspan="2">ยอดขาดเป้า</th></tr><tr>${CLS.map(c=>`<th>${c.k}</th>`).join('')}${CLS.map(c=>`<th>${c.k}</th>`).join('')}</tr></thead><tbody>${list.map(x=>rowH(x,true)).join('')}${rowH(tot,false)}</tbody>`;
+  const rowH=(x,heat)=>`<tr style="cursor:default"><td>${x.r===tot.r?'<b>'+esc(x.r)+'</b>':shapeHTML(x.r)+esc(x.r)}</td>`+CLS.map((cl,i)=>`<td class="${i?'':'gl'}">${pct(shOf(x.c[cl.k]))}</td>`).join('')+CLS.map((cl,i)=>`<td class="${heat?'heat':''} ${i?'':'gl'}" style="${heat&&x.c[cl.k].pct!=null?colMix(cl.color,x.c[cl.k].pct,...r2[cl.k]):''}">${pct(x.c[cl.k].pct)}</td>`).join('')+`<td class="gl"><b>${pct(x.c.tot.pct)}</b></td><td class="gl">฿${fmtM(x.c.tot.gap)}</td></tr>`;
+  t.innerHTML=`<thead><tr><th class="l" rowspan="2">ภาค</th><th colspan="3" class="gl">สัดส่วนอิง${baseName()}</th><th colspan="3" class="gl">% เก็บได้ (ยอดเงิน)</th><th rowspan="2" class="gl">รวม</th><th rowspan="2" class="gl">ยอดขาดเป้า</th></tr><tr>${CLS.map((c,i)=>`<th class="${i?'':'gl'}">${c.k}</th>`).join('')}${CLS.map((c,i)=>`<th class="${i?'':'gl'}">${c.k}</th>`).join('')}</tr></thead><tbody>${list.map(x=>rowH(x,true)).join('')}${rowH(tot,false)}</tbody>`;
 }
 function renderDLists(){
   const gs=byGroup(dRows()).map(x=>({...x,c:clsAgg(x.rows)})).filter(x=>x.c.tot.t);
