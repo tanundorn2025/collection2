@@ -109,6 +109,7 @@ input[type=number]{width:70px}
 .cp input{width:26px;height:26px;padding:0;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer}
 .mchips{display:flex;flex-wrap:wrap;gap:6px}
 table.mini td,table.mini th{padding:5px 8px}
+.guide{margin:2px 0 8px;font-size:12px;color:var(--text2);background:var(--surface2,rgba(127,127,127,.08));border-radius:8px;padding:6px 10px}.guide summary{cursor:pointer;font-weight:600;color:var(--text)}.guide div{margin-top:4px;line-height:1.6}
 #tblDReg{table-layout:fixed;width:100%}#tblDReg th,#tblDReg td{text-align:center;padding:7px 6px}#tblDReg th.l,#tblDReg td:first-child{text-align:left;width:15%;white-space:nowrap}#tblDReg .gl{border-left:1px solid var(--border)}
 .bad{color:var(--down);font-weight:600}
 .xbtn{font:inherit;font-size:14px;line-height:1;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:28px;height:26px;cursor:pointer;flex:none}
@@ -236,14 +237,14 @@ label.radio{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:
   <div class="kpis" id="dKpis"></div>
   <div class="card" style="margin-bottom:16px"><h2>ข้อสังเกตและข้อเสนอแนะด้านชั้นหนี้</h2><div class="hint" id="dInsHint"></div><div class="insights" id="dIns"></div></div>
   <div class="grid">
-    <div class="card c6"><div class="ch"><h2>สัดส่วนชั้นหนี้ รายเดือน</h2><label class="tgl"><input type="checkbox" data-lbl="dMix"> แสดงเลข %</label></div><div class="hint" id="hDMix"></div><div class="legend" id="lgDMix"></div><div class="chart" id="chDMix"></div></div>
+    <div class="card c6"><div class="ch"><h2>สัดส่วนชั้นหนี้ รายเดือน</h2><label class="tgl"><input type="checkbox" data-lbl="dMix"> แสดงเลข %</label></div><div class="hint" id="hDMix"></div><div class="legend" id="lgDMix"></div><details class="guide"><summary>วิธีอ่านกราฟ</summary><div id="gDMix"></div></details><div class="chart" id="chDMix"></div></div>
     <div class="card c6"><div class="ch"><h2>% เก็บได้ แยกชั้นหนี้ รายเดือน</h2><label class="tgl"><input type="checkbox" data-lbl="dLine"> แสดงเลข %</label></div><div class="hint">ยอดเก็บได้ ÷ เป้าค่างวด ของแต่ละชั้น · ชี้ที่จุดเพื่อดูค่า</div><div class="legend" id="lgDLine"></div><div class="chart" id="chDLine"></div></div>
   </div>
   <div class="grid">
     <div class="card c7"><div class="ch"><h2>ชั้นหนี้ละเอียด (16 ชั้น)</h2><label class="tgl"><input type="checkbox" data-lbl="dBuck"> แสดงตัวเลข</label></div>
       <div class="hint" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="flabel">ตัวชี้วัด</span><select id="selMetric" aria-label="ตัวชี้วัดรายชั้นหนี้"><option value="pct">% เก็บได้ (ยอดเงิน)</option><option value="cpct">% สัญญาที่เก็บได้</option><option value="n">จำนวนสัญญา</option><option value="t">เป้าค่างวด (฿)</option><option value="a">เก็บได้ (฿)</option><option value="gap">ยอดขาดเป้า (฿)</option></select><span id="hDBuck"></span></div>
       <div class="legend" id="lgDBuck"></div><div class="chart" id="chDBuck"></div></div>
-    <div class="card c5"><div class="ch"><h2>สัดส่วนชั้นหนี้ แยกภาค</h2><label class="tgl"><input type="checkbox" data-lbl="dRegion"> แสดงเลข %</label></div><div class="hint" id="hDReg"></div><div class="legend" id="lgDReg"></div><div class="chart" id="chDReg"></div></div>
+    <div class="card c5"><div class="ch"><h2>สัดส่วนชั้นหนี้ แยกภาค</h2><label class="tgl"><input type="checkbox" data-lbl="dRegion"> แสดงเลข %</label></div><div class="hint" id="hDReg"></div><div class="legend" id="lgDReg"></div><details class="guide" open><summary>วิธีอ่านกราฟ</summary><div id="gDReg"></div></details><div class="chart" id="chDReg"></div></div>
   </div>
   <div class="card" style="margin-bottom:16px"><h2>สรุป ภาค × ชั้นหนี้</h2><div class="hint" id="hDRegT"></div><div class="twrap" style="max-height:none"><table class="mini" id="tblDReg"></table></div></div>
   <div class="grid">
@@ -753,10 +754,11 @@ function stackV(el,cats,get){
 }
 function stackH(el,rows){
   if(!rows.length)return emptyMsg(el,'ไม่มีข้อมูล');
-  const w=W(el),rh=isExp(el)?56:44,m={l:w<420?60:70,r:S.lbl.dRegion?48:8,t:4,b:4},h=rows.length*rh+m.t+m.b;
+  const w=W(el),rh=isExp(el)?56:44,m={l:w<420?72:84,r:S.lbl.dRegion?48:8,t:4,b:4},h=rows.length*rh+m.t+m.b;
   const x=d3.scaleLinear().domain([0,1]).range([m.l,w-m.r]);const svg=svgIn(el,w,h);
   rows.forEach((r,i)=>{const yy=m.t+i*rh;let acc=0;
-    svg.append('text').attr('x',m.l-8).attr('y',yy+rh/2+4).attr('text-anchor','end').style('fill','var(--text2)').style('font-size','12px').text(r.label);
+    svg.append('text').attr('x',m.l-8).attr('y',yy+rh/2+(r.sub?-1:4)).attr('text-anchor','end').style('fill','var(--text2)').style('font-size','12px').text(r.label);
+    if(r.sub)svg.append('text').attr('x',m.l-8).attr('y',yy+rh/2+17).attr('text-anchor','end').style('fill','var(--muted)').style('font-size','9.5px').text(r.sub);
     CLS.forEach(cl=>{const v=r.s[cl.k]||0;const x0=x(acc),ww=Math.max(0,x(acc+v)-x(acc)-2);
       svg.append('rect').attr('x',x0+1).attr('y',yy+6).attr('width',ww).attr('height',rh-12).attr('rx',3).style('fill',cl.color);
       if(S.lbl.dRegion&&v>0){const txt=(v*100).toFixed(1)+'%',tw=txt.length*6.4+8;
@@ -818,6 +820,7 @@ function renderDIns(){
 }
 function renderDMix(){
   const TM=trendM();
+  $('#gDMix').innerHTML=`แต่ละแท่ง = 1 เดือน (ภาคที่เลือก) แบ่งตามชั้นหนี้ อิง<b>${baseName()}</b> · ดูแนวโน้ม: ถ้าเขียวลดลงและเหลือง/แดงเพิ่มขึ้นทุกเดือน แปลว่าพอร์ตเริ่มแย่ลง · ตัวเลขเหนือ/ข้างแท่ง = ส่วนที่แคบเกินใส่ในแท่ง`;
   $('#hDMix').textContent=`สัดส่วนอิง${baseName()} · ภาคที่เลือก · ${selM().length>=2?'เฉพาะเดือนที่เลือก':'ทุกเดือน'}`;
   $('#lgDMix').innerHTML=clsLegend();
   const cats=TM.map(m=>({key:m,label:mShort(m)}));
@@ -846,7 +849,8 @@ function renderDBuck(){
 function renderDReg(){
   const rows=dRows(),rr=S.allRegions.filter(r=>S.regions.has(r));
   $('#hDReg').textContent=`สัดส่วนอิง${baseName()} · ${monthLabel()}`;$('#lgDReg').innerHTML=clsLegend();
-  const data=rr.map(r=>{const a=clsAgg(rows.filter(d=>d.r===r));return{label:r,a,s:{P:shOf(a.P),SM:shOf(a.SM),NPL:shOf(a.NPL)}}}).filter(x=>x.a.tot.t).map(x=>({...x,tip:`<div class="h">${esc(x.label)}</div>`+CLS.map(cl=>trow(clsSym(cl.k),cl.name,pct(shOf(x.a[cl.k]))+' · เก็บ '+pct(x.a[cl.k].pct))).join('')}));
+  const data=rr.map(r=>{const a=clsAgg(rows.filter(d=>d.r===r));return{label:r,sub:'เก็บได้ '+pct(a.tot.pct),a,s:{P:shOf(a.P),SM:shOf(a.SM),NPL:shOf(a.NPL)}}}).filter(x=>x.a.tot.t).map(x=>({...x,tip:`<div class="h">${esc(x.label)}</div>`+CLS.map(cl=>trow(clsSym(cl.k),cl.name,pct(shOf(x.a[cl.k]))+' · เก็บ '+pct(x.a[cl.k].pct))).join('')}));
+  $('#gDReg').innerHTML=`แต่ละแถบ = 1 ภาค ยาวเต็ม 100% แบ่งตามชั้นหนี้ (<b style="color:var(--cP)">P</b> ปกติ · <b style="color:var(--cSM)">SM</b> ค้าง 31–90 วัน · <b style="color:var(--cNPL)">NPL</b> ค้างเกิน 90 วัน) ตัวเลข = สัดส่วนอิง<b>${baseName()}</b> · ตัวเลขนอกแท่ง = ส่วนที่แคบเกินใส่ในแท่ง · ใต้ชื่อภาคคือ % เก็บได้รวม · <b>เขียวยาว = พอร์ตดี</b> เหลือง/แดงยาว = เสี่ยง · ชี้เมาส์ดู % เก็บได้แยกชั้น`;
   stackH($('#chDReg'),data);
 }
 function renderDRegTable(){
