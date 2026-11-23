@@ -146,6 +146,8 @@ th,td{padding:6px 10px;text-align:right;white-space:nowrap;border-bottom:1px sol
 th{position:sticky;top:0;background:var(--surface2);color:var(--text2);font-weight:600;font-size:12px;z-index:2}
 th.sort{cursor:pointer;user-select:none}
 th.sort:hover{color:var(--text)}
+.sx{opacity:.35;font-size:11px}
+th.sort:hover .sx{opacity:.9}
 th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1}
 th:first-child{background:var(--surface2);z-index:3}
 td.l,th.l{text-align:left}
@@ -646,7 +648,7 @@ function renderTable(){
   const val=x=>k==='g'?x.g:k==='r'?x.r:k==='tot'?x.tot:k==='delta'?x.delta:pctOf(x,k);
   list.sort((a,b)=>{const va=val(a),vb=val(b);if(va==null)return 1;if(vb==null)return -1;return (typeof va==='string'?va.localeCompare(vb,'th',{numeric:true}):va-vb)*S.sort.dir});
   const all=list.flatMap(x=>TM.map(m=>pctOf(x,m))).filter(v=>v!=null);const lo=Math.min(...all),hi=Math.max(...all);
-  const th=(key,txt,cls='')=>`<th class="sort ${cls} ${S.months.has(key)&&S.months.size<MONTHS.length?'cur':''}" tabindex="0" data-k="${esc(key)}">${txt}${S.sort.key===key?(S.sort.dir>0?' ▲':' ▼'):''}</th>`;
+  const th=(key,txt,cls='')=>`<th class="sort ${cls} ${S.months.has(key)&&S.months.size<MONTHS.length?'cur':''}" tabindex="0" data-k="${esc(key)}">${txt}${S.sort.key===key?(S.sort.dir>0?' ▲':' ▼'):' <span class="sx">⇅</span>'}</th>`;
   const lastLbl=TM.length>1?`Δ ${mShort(TM[TM.length-1])}`:'Δ';
   let h='<thead><tr>'+th('g','กลุ่ม','l')+th('r','ภาค','l')+TM.map(m=>th(m,esc(mShort(m)))).join('')+th('tot','รวม')+th('delta',lastLbl)+'</tr></thead><tbody>';
   for(const x of list){
@@ -866,7 +868,7 @@ function renderDTable(){
   list.sort((a,b)=>{const va=val(a),vb=val(b);if(va==null)return 1;if(vb==null)return -1;return (typeof va==='string'?va.localeCompare(vb,'th',{numeric:true}):va-vb)*S.dsort.dir});
   const rng=f=>{const v=list.map(f).filter(x=>x!=null);return v.length?[Math.min(...v),Math.max(...v)]:[0,1]};
   const rs={P:rng(x=>shOf(x.c.P)),SM:rng(x=>shOf(x.c.SM)),NPL:rng(x=>shOf(x.c.NPL))},rp={P:rng(x=>x.c.P.pct),SM:rng(x=>x.c.SM.pct),NPL:rng(x=>x.c.NPL.pct)};
-  const th=(k,txt,cls='')=>`<th class="sort ${cls}" tabindex="0" data-k="${k}">${txt}${sk===k?(S.dsort.dir>0?' ▲':' ▼'):''}</th>`;
+  const th=(k,txt,cls='')=>`<th class="sort ${cls}" tabindex="0" data-k="${k}">${txt}${sk===k?(S.dsort.dir>0?' ▲':' ▼'):' <span class="sx">⇅</span>'}</th>`;
   let h='<thead><tr>'+th('g','กลุ่ม','l')+th('r','ภาค','l')+CLS.map(c=>th('s'+c.k,'% '+c.k+(S.base==='n'?' (สัญญา)':' (เป้า)'))).join('')+CLS.map(c=>th('p'+c.k,'เก็บ '+c.k)).join('')+th('tot','เก็บรวม')+th('gap','ขาดเป้า (฿)')+'</tr></thead><tbody>';
   for(const x of list){
     h+=`<tr data-g="${esc(x.g)}" class="${x.g===S.group?'sel':''}"><td>${esc(x.g)}</td><td class="l">${shapeHTML(x.r)}${esc(x.r)}</td>`;
